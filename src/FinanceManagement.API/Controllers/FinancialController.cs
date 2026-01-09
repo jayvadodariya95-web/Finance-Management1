@@ -3,28 +3,34 @@ using Microsoft.AspNetCore.Authorization;
 using FinanceManagement.Application.Common;
 using FinanceManagement.Application.Interfaces;
 using FinanceManagement.Application.DTOs;
+using System.Security.Claims;
 
 namespace FinanceManagement.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
+// Restrict access by role
+[Authorize(Policy = "AdminOrPartner")]
 public class FinancialController : ControllerBase
 {
     private readonly IFinancialService _financialService;
     private readonly IBankTransactionRepository _transactionRepository;
+    private readonly IPartnerRepository _partnerRepository;
     private readonly ILogger<FinancialController> _logger;
 
     public FinancialController(
         IFinancialService financialService,
         IBankTransactionRepository transactionRepository,
+        IPartnerRepository partnerRepository,
         ILogger<FinancialController> logger)
     {
         _financialService = financialService;
         _transactionRepository = transactionRepository;
+        _partnerRepository = partnerRepository;
         _logger = logger;
     }
 
+    [Authorize(Policy = "AdminOrPartner")]
     [HttpGet("monthly-report/{month}/{year}")]
     public async Task<ActionResult<ApiResponse<MonthlyReportDto>>> GetMonthlyReport(int month, int year)
     {
@@ -33,11 +39,16 @@ public class FinancialController : ControllerBase
             // BUG: No role authorization - any authenticated user can view financial reports
             // BUG: No validation for month/year parameters
             
+            // if (month < 1 || month > 12)
+            // {
+            //     return BadRequest(ApiResponse<MonthlyReportDto>.ErrorResult("Invalid month"));
+            // }
             if (month < 1 || month > 12)
-            {
-                return BadRequest(ApiResponse<MonthlyReportDto>.ErrorResult("Invalid month"));
-            }
+            return BadRequest("Month must be between 1 and 12");
 
+            if (year < 2000 || year > DateTime.UtcNow.Year)
+            return BadRequest("Invalid year");
+  
             var report = await _financialService.GenerateMonthlyReportAsync(month, year);
             
             return Ok(ApiResponse<MonthlyReportDto>.SuccessResult(report));
@@ -49,31 +60,64 @@ public class FinancialController : ControllerBase
         }
     }
 
-    [HttpGet("partner-income/{partnerId}/{month}/{year}")]
-    public async Task<ActionResult<ApiResponse<decimal>>> GetPartnerIncome(int partnerId, int month, int year)
-    {
+       [Authorize(Policy = "AdminOrPartner")]
+       [HttpGet("partner-income/{partnerId}/{month}/{year}")]
+        public async Task<ActionResult<ApiResponse<decimal>>> GetPartnerIncome(int partnerId, int month, int year)
+        {
+        //try
+        //{
+        //    // BUG: No authorization check - any user can view any partner's income
+        //    // var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+        //    // var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+        //    var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+        //    var partnerIdClaim = User.FindFirst("PartnerId")?.Value;
+
+
+        //    // Prevent partners from accessing other partners' data
+        //    if (userRole == "Partner")
+        //    {
+        //        if (string.IsNullOrEmpty(partnerIdClaim) || partnerIdClaim != partnerId.ToString())
+        //            return Forbid("Partners can only access their own data");
+        //    }
+
         try
         {
-            // BUG: No authorization check - any user can view any partner's income
-            
-            var partnerIncomes = await _financialService.CalculatePartnerIncomesAsync(month, year);
-            var partnerIncome = partnerIncomes.FirstOrDefault(p => p.PartnerId == partnerId);
-            
-            if (partnerIncome == null)
+            var userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+
+            // SECURITY CHECK: 
+            // If the user is a Partner, strictly match the ID in the token.
+            if (userRole == "Partner")
             {
-                return NotFound(ApiResponse<decimal>.ErrorResult("Partner income not found"));
+                var tokenPartnerId = User.FindFirst("PartnerId")?.Value;
+
+                // If token says ID is "1", but you asked for "99", this blocks you.
+                if (string.IsNullOrEmpty(tokenPartnerId) || tokenPartnerId != partnerId.ToString())
+                {
+                    // Return 403 Forbidden with a clear message
+                    return StatusCode(403, ApiResponse<decimal>.ErrorResult("Access Denied: You can only view your own data"));
+                }
             }
 
-            return Ok(ApiResponse<decimal>.SuccessResult(partnerIncome.ActualIncome));
+
+            var partnerIncomes = await _financialService.CalculatePartnerIncomesAsync(month, year);
+                var partnerIncome = partnerIncomes.FirstOrDefault(p => p.PartnerId == partnerId);
+
+                if (partnerIncome == null)
+                {
+                    return NotFound(ApiResponse<decimal>.ErrorResult("Partner income not found"));
+                }
+
+                return Ok(ApiResponse<decimal>.SuccessResult(partnerIncome.ActualIncome));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving partner income");
+                return StatusCode(500, ApiResponse<decimal>.ErrorResult("Failed to retrieve partner income"));
+            }
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error retrieving partner income");
-            return StatusCode(500, ApiResponse<decimal>.ErrorResult("Failed to retrieve partner income"));
-        }
-    }
 
     [HttpPost("settlements/{month}/{year}")]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<ActionResult<ApiResponse<string>>> ProcessSettlements(int month, int year)
     {
         try
@@ -92,6 +136,7 @@ public class FinancialController : ControllerBase
         }
     }
 
+    [Authorize(Policy = "AdminOnly")]
     [HttpGet("transactions")]
     public async Task<ActionResult<ApiResponse<IEnumerable<BankTransactionDto>>>> GetTransactions(
         [FromQuery] DateTime? startDate, 
@@ -133,6 +178,7 @@ public class FinancialController : ControllerBase
         }
     }
 
+    [Authorize(Policy = "AdminOnly")]
     [HttpPost("transactions")]
     public async Task<ActionResult<ApiResponse<BankTransactionDto>>> CreateTransaction([FromBody] CreateTransactionDto request)
     {
@@ -180,6 +226,10 @@ public class FinancialController : ControllerBase
     {
         try
         {
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+
+
             // BUG: Calculation includes bugs from FinancialService
             var netIncome = await _financialService.CalculateNetIncomeAsync(month, year);
             

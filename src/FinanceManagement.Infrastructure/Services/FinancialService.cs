@@ -25,9 +25,10 @@ public class FinancialService : IFinancialService
 
     public async Task<MonthlyReportDto> GenerateMonthlyReportAsync(int month, int year)
     {
-        var totalIncome = _financialRepository.GetTotalIncomeAsync(month, year).Result;
-        var totalExpenses = _financialRepository.GetTotalExpensesAsync(month, year).Result;
-        var totalSalaries = _financialRepository.GetTotalSalariesAsync(month, year).Result;
+        // FIX: BUG-012 - Removed .Result blocking calls and used await
+        var totalIncome = await _financialRepository.GetTotalIncomeAsync(month, year);
+        var totalExpenses = await _financialRepository.GetTotalExpensesAsync(month, year);
+        var totalSalaries = await _financialRepository.GetTotalSalariesAsync(month, year);
 
         var netIncome = totalIncome - totalExpenses - totalSalaries;
 
@@ -49,10 +50,18 @@ public class FinancialService : IFinancialService
                 Description = e.Description,
                 Amount = e.Amount,
                 Category = e.Category.ToString(),
-                Date = new DateTime(e.Year, e.Month, 1),
+                // FIX: BUG-004 - Added check for valid date creation
+                Date = IsValidDate(e.Year, e.Month, 1) ? new DateTime(e.Year, e.Month, 1) : DateTime.MinValue,
                 IsApproved = !string.IsNullOrEmpty(e.ApprovedBy)
             }).ToList()
         };
+    }
+
+    // Helper to prevent BUG-004 (Index out of range date)
+    private bool IsValidDate(int year, int month, int day)
+    {
+        if (year < 1 || year > 9999 || month < 1 || month > 12 || day < 1) return false;
+        return day <= DateTime.DaysInMonth(year, month);
     }
 
     public async Task<decimal> CalculateNetIncomeAsync(int month, int year)
@@ -69,16 +78,29 @@ public class FinancialService : IFinancialService
         var partners = await _partnerRepository.GetMainPartnersAsync();
         var partnerIncomes = new List<PartnerIncomeDto>();
 
+        //new logic added
+        //var totalIncome = await _financialRepository.GetTotalIncomeAsync(month, year);
+        var netIncome = await CalculateNetIncomeAsync(month, year);
+
         foreach (var partner in partners)
         {
             var actualIncome = await _financialRepository.GetPartnerIncomeAsync(partner.Id, month, year);
-            var expectedIncome = 200000m;
+            //var expectedIncome = 200000m;
+            // FIX: BUG-009 - Calculate share based on Profit
+            var expectedIncome = partner.SharePercentage > 0
+                ? Math.Round(netIncome * partner.SharePercentage / 100, 2)
+                : 0;
             var settlementAmount = actualIncome - expectedIncome;
 
             var projectsCount = await _context.Projects
                 .CountAsync(p => p.ManagedByPartnerId == partner.Id);
 
-            var partnerName = partner.User?.FirstName + " " + partner.User?.LastName;
+            //var partnerName = partner.User?.FirstName + " " + partner.User?.LastName;
+            // FIX: BUG-002 - Null check
+            var partnerName = partner.User == null
+                ? "Unknown Partner"
+                : $"{partner.User.FirstName} {partner.User.LastName}";
+
 
             partnerIncomes.Add(new PartnerIncomeDto
             {
@@ -97,18 +119,35 @@ public class FinancialService : IFinancialService
     public async Task ProcessSettlementsAsync(int month, int year)
     {
         var partners = await _partnerRepository.GetMainPartnersAsync();
+        //var totalIncome = await _financialRepository.GetTotalIncomeAsync(month, year);
+        // CHANGED: Use NetIncome for settlements
+        var netIncome = await CalculateNetIncomeAsync(month, year);
 
         foreach (var partner in partners)
         {
-            var settlementAmount = await CalculatePartnerSettlementAsync(partner.Id, month, year);
-            
+            var alreadyExists = await _context.Settlements.AnyAsync(s =>
+                s.PartnerId == partner.Id &&
+                s.Month == month &&
+                s.Year == year);
+
+            if (alreadyExists)
+                continue;
+
+            var actualIncome = await _financialRepository.GetPartnerIncomeAsync(partner.Id, month, year);
+
+            var expectedIncome = partner.SharePercentage > 0
+                ? Math.Round(netIncome * partner.SharePercentage / 100, 2)
+                : 0;
+
+            var settlementAmount = actualIncome - expectedIncome;
+
             var settlement = new Settlement
             {
                 PartnerId = partner.Id,
                 Month = month,
                 Year = year,
-                ExpectedAmount = 200000m,
-                ActualAmount = await _financialRepository.GetPartnerIncomeAsync(partner.Id, month, year),
+                ExpectedAmount = expectedIncome,
+                ActualAmount = actualIncome,
                 SettlementAmount = settlementAmount,
                 Status = SettlementStatus.Pending,
                 CreatedAt = DateTime.UtcNow
@@ -120,15 +159,58 @@ public class FinancialService : IFinancialService
         await _context.SaveChangesAsync();
     }
 
+    //public async Task ProcessSettlementsAsync(int month, int year)
+    //{
+    //    var partners = await _partnerRepository.GetMainPartnersAsync();
+
+    //    foreach (var partner in partners)
+    //    {
+    //        var settlementAmount = await CalculatePartnerSettlementAsync(partner.Id, month, year);
+
+    //        var settlement = new Settlement
+    //        {
+    //            PartnerId = partner.Id,
+    //            Month = month,
+    //            Year = year,
+    //            ExpectedAmount = 200000m,
+    //            ActualAmount = await _financialRepository.GetPartnerIncomeAsync(partner.Id, month, year),
+    //            SettlementAmount = settlementAmount,
+    //            Status = SettlementStatus.Pending,
+    //            CreatedAt = DateTime.UtcNow
+    //        };
+
+    //        _context.Settlements.Add(settlement);
+    //    }
+
+    //    await _context.SaveChangesAsync();
+    //}
+
+    //public async Task<decimal> CalculatePartnerSettlementAsync(int partnerId, int month, int year)
+    //{
+    //    var partner = await _partnerRepository.GetByIdAsync(partnerId);
+    //    if (partner == null) return 0;
+
+    //    var actualIncome = await _financialRepository.GetPartnerIncomeAsync(partnerId, month, year);
+    //    var expectedIncome = 200000m;
+    //    var settlement = actualIncome - expectedIncome;
+
+    //    return Math.Round(settlement, 2);
+    //}
     public async Task<decimal> CalculatePartnerSettlementAsync(int partnerId, int month, int year)
     {
         var partner = await _partnerRepository.GetByIdAsync(partnerId);
-        if (partner == null) return 0;
+        if (partner == null)
+            return 0;
 
+        //var totalIncome = await _financialRepository.GetTotalIncomeAsync(month, year);
+        // CHANGED: Use NetIncome
+        var netIncome = await CalculateNetIncomeAsync(month, year);
         var actualIncome = await _financialRepository.GetPartnerIncomeAsync(partnerId, month, year);
-        var expectedIncome = 200000m;
-        var settlement = actualIncome - expectedIncome;
-        
-        return Math.Round(settlement, 2);
+
+        var expectedIncome = partner.SharePercentage > 0
+            ? Math.Round(netIncome * partner.SharePercentage / 100, 2)
+            : 0;
+
+        return Math.Round(actualIncome - expectedIncome, 2);
     }
 }

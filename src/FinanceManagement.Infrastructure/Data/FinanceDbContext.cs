@@ -32,7 +32,10 @@ public class FinanceDbContext : DbContext
             entity.Property(e => e.FirstName).IsRequired().HasMaxLength(100);
             entity.Property(e => e.LastName).IsRequired().HasMaxLength(100);
             entity.Property(e => e.PasswordHash).IsRequired();
-            
+
+            // TASK-007: Index for fast Logins (User.Email)
+            entity.HasIndex(e => e.Email).IsUnique();
+
             // BUG: Missing unique constraint on Email
             // PERFORMANCE ISSUE: Missing index on Email for login queries
         });
@@ -47,7 +50,10 @@ public class FinanceDbContext : DbContext
             entity.HasOne(e => e.Branch)
                   .WithMany(b => b.Partners)
                   .HasForeignKey(e => e.BranchId);
-            
+
+            // TASK-007: Index for fast Joins (Partner.UserId)
+            entity.HasIndex(e => e.UserId);
+
             // BUG: Missing index on UserId - will cause slow queries
             // BUG: No validation for SharePercentage range
         });
@@ -62,7 +68,11 @@ public class FinanceDbContext : DbContext
             entity.HasOne(e => e.Branch)
                   .WithMany(b => b.Employees)
                   .HasForeignKey(e => e.BranchId);
-            
+
+            // TASK-007: Index for Employee Lookups
+            entity.HasIndex(e => e.EmployeeCode).IsUnique();
+            entity.HasIndex(e => e.UserId);
+
             // BUG: Missing unique constraint on EmployeeCode
             // PERFORMANCE ISSUE: Missing index on UserId
         });
@@ -76,7 +86,10 @@ public class FinanceDbContext : DbContext
             entity.HasOne(e => e.ManagedByPartner)
                   .WithMany(p => p.ManagedProjects)
                   .HasForeignKey(e => e.ManagedByPartnerId);
-            
+
+            // TASK-007: Index for filtering projects by Partner
+            entity.HasIndex(e => e.ManagedByPartnerId);
+
             // PERFORMANCE ISSUE: Missing index on ManagedByPartnerId
             // BUG: No check constraint for ProjectValue > 0
         });
@@ -93,7 +106,10 @@ public class FinanceDbContext : DbContext
                   .WithMany(emp => emp.ProjectAssignments)
                   .HasForeignKey(e => e.EmployeeId)
                   .OnDelete(DeleteBehavior.Restrict);
-            
+
+            // TASK-007: Composite Index (Prevents assigning same employee twice to same project)
+            entity.HasIndex(e => new { e.ProjectId, e.EmployeeId }).IsUnique();
+
             // BUG: Missing unique constraint on ProjectId + EmployeeId combination
             // PERFORMANCE ISSUE: Missing composite index
         });
@@ -109,7 +125,11 @@ public class FinanceDbContext : DbContext
             entity.HasOne(e => e.Project)
                   .WithMany(p => p.BankTransactions)
                   .HasForeignKey(e => e.ProjectId);
-            
+
+            // TASK-007: Critical Indexes for Report Generation (Date Range & Project Filtering)
+            entity.HasIndex(e => e.TransactionDate);
+            entity.HasIndex(e => e.ProjectId);
+
             // PERFORMANCE ISSUE: Missing index on TransactionDate for date range queries
             // BUG: No concurrency token for preventing double processing
         });
@@ -124,7 +144,10 @@ public class FinanceDbContext : DbContext
             entity.HasOne(e => e.Partner)
                   .WithMany(p => p.Settlements)
                   .HasForeignKey(e => e.PartnerId);
-            
+
+            // TASK-007: Composite Index (Prevents Duplicate Settlements)
+            entity.HasIndex(e => new { e.PartnerId, e.Month, e.Year }).IsUnique();
+
             // BUG: Missing unique constraint on PartnerId + Month + Year
         });
 
@@ -134,7 +157,10 @@ public class FinanceDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Amount).HasPrecision(18, 2);
             entity.Property(e => e.Description).IsRequired().HasMaxLength(500);
-            
+
+            // TASK-007: Index for Monthly Reports
+            entity.HasIndex(e => new { e.Month, e.Year });
+
             // PERFORMANCE ISSUE: Missing index on Month + Year for monthly reports
         });
 
@@ -144,7 +170,8 @@ public class FinanceDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.AccountNumber).IsRequired().HasMaxLength(50);
             entity.Property(e => e.Balance).HasPrecision(18, 2);
-            
+
+            entity.HasIndex(e => e.AccountNumber).IsUnique();
             // BUG: Missing unique constraint on AccountNumber
         });
     }
