@@ -1,3 +1,5 @@
+﻿using System.ComponentModel.DataAnnotations;
+
 namespace FinanceManagement.Application.DTOs;
 
 public class UserDto
@@ -31,7 +33,7 @@ public class PartnerDto
     public string? BranchName { get; set; }
 }
 
-public class ProjectDto
+public class ProjectDto : IValidatableObject
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
@@ -42,6 +44,18 @@ public class ProjectDto
     public string Status { get; set; } = string.Empty;
     public string ManagedByPartner { get; set; } = string.Empty;
     public List<EmployeeDto> AssignedEmployees { get; set; } = new();
+
+    // ✅ BUG-017 FIX
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (EndDate < StartDate)
+        {
+            yield return new ValidationResult(
+                "EndDate must be greater than or equal to StartDate",
+                new[] { nameof(StartDate), nameof(EndDate) }
+            );
+        }
+    }
 }
 
 public class EmployeeDto
@@ -49,12 +63,29 @@ public class EmployeeDto
     public int Id { get; set; }
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
+    public string FullName => $"{FirstName} {LastName}";
+    public string Email { get; set; } = string.Empty;
+    public string BranchName { get; set; } = string.Empty;
     public string EmployeeCode { get; set; } = string.Empty;
     public string Department { get; set; } = string.Empty;
     public string Position { get; set; } = string.Empty;
     public decimal MonthlySalary { get; set; }
     public DateTime JoinDate { get; set; }
     public bool IsActive { get; set; }
+}
+
+public class CreateEmployeeDto
+{
+    public int UserId { get; set; }
+    public bool IsActive { get; set; } = true;
+    public int BranchId { get; set; }
+}
+
+public class UpdateEmployeeDto
+{
+    public bool IsActive { get; set; }
+    public int BranchId { get; set; }
+
 }
 
 // BUG: Missing validation attributes

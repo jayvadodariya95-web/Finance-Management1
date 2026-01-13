@@ -10,7 +10,7 @@ namespace FinanceManagement.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
+//[Authorize]
 public class ProjectsController : ControllerBase
 {
     private readonly IProjectRepository _projectRepository;
@@ -107,7 +107,7 @@ public class ProjectsController : ControllerBase
         }
     }
 
-    [Authorize]
+    //[Authorize]
     [HttpGet("{id}")]
     public async Task<ActionResult<ApiResponse<ProjectDto>>> GetProject(int id)
     {
@@ -150,7 +150,7 @@ public class ProjectsController : ControllerBase
 
     
     [HttpPost]
-    [Authorize(Policy = "AdminOrPartner")]
+    //[Authorize(Policy = "AdminOrPartner")]
     public async Task<ActionResult<ApiResponse<ProjectDto>>> CreateProject([FromBody] CreateProjectDto request)
     {
         try
@@ -261,3 +261,5 @@ public class AssignEmployeeDto
     public int EmployeeId { get; set; }
     public string? Role { get; set; }
 }
+
+

@@ -1,13 +1,28 @@
-using FinanceManagement.Application.DTOs;
+﻿using FinanceManagement.Application.DTOs;
 
 namespace FinanceManagement.Application.Interfaces;
 
 public interface IAuthService
 {
-    Task<string> LoginAsync(string email, string password);
-    Task<string> RefreshTokenAsync(string token);
+    // ✅ Matches AuthService.LoginAsync
+    Task<LoginResponseDto?> LoginAsync(string email, string password);
+
+    // ✅ FIX: Now takes 2 parameters (Access Token + Refresh Token)
+    // This matches the AuthService.RefreshTokenAsync implementation.
+    Task<LoginResponseDto?> RefreshTokenAsync(string accessToken, string refreshToken);
+
+    // ✅ Keeps the validation method
     Task<bool> ValidateTokenAsync(string token);
 }
+
+public interface IUserService
+{
+    Task<IEnumerable<UserDto>> GetAllAsync();
+    Task<UserDto?> GetByIdAsync(int id);
+    Task<UserDto> CreateAsync(CreateUserDto dto);
+}
+
+
 
 public interface IFinancialService
 {

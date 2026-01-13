@@ -26,9 +26,20 @@ public class FinancialService : IFinancialService
     public async Task<MonthlyReportDto> GenerateMonthlyReportAsync(int month, int year)
     {
         // FIX: BUG-012 - Removed .Result blocking calls and used await
-        var totalIncome = await _financialRepository.GetTotalIncomeAsync(month, year);
-        var totalExpenses = await _financialRepository.GetTotalExpensesAsync(month, year);
-        var totalSalaries = await _financialRepository.GetTotalSalariesAsync(month, year);
+        //var totalIncome = await _financialRepository.GetTotalIncomeAsync(month, year);
+        //var totalExpenses = await _financialRepository.GetTotalExpensesAsync(month, year);
+        //var totalSalaries = await _financialRepository.GetTotalSalariesAsync(month, year);
+
+        var incomeTask = _financialRepository.GetTotalIncomeAsync(month, year);
+        var expenseTask = _financialRepository.GetTotalExpensesAsync(month, year);
+        var salaryTask = _financialRepository.GetTotalSalariesAsync(month, year);
+
+        await Task.WhenAll(incomeTask, expenseTask, salaryTask);
+
+        var totalIncome = incomeTask.Result;
+        var totalExpenses = expenseTask.Result;
+        var totalSalaries = salaryTask.Result;
+
 
         var netIncome = totalIncome - totalExpenses - totalSalaries;
 
@@ -76,6 +87,15 @@ public class FinancialService : IFinancialService
     public async Task<IEnumerable<PartnerIncomeDto>> CalculatePartnerIncomesAsync(int month, int year)
     {
         var partners = await _partnerRepository.GetMainPartnersAsync();
+
+        var totalShare = partners.Sum(p => p.SharePercentage);
+        if (totalShare != 100)
+        {
+            throw new InvalidOperationException(
+                $"Invalid partner share configuration. Total share is {totalShare}%, expected 100%."
+            );
+        }
+
         var partnerIncomes = new List<PartnerIncomeDto>();
 
         //new logic added
@@ -119,6 +139,16 @@ public class FinancialService : IFinancialService
     public async Task ProcessSettlementsAsync(int month, int year)
     {
         var partners = await _partnerRepository.GetMainPartnersAsync();
+
+        var totalShare = partners.Sum(p => p.SharePercentage);
+
+        if (totalShare != 100)
+        {
+            throw new InvalidOperationException(
+                $"Invalid partner share configuration. Total share is {totalShare}%, expected 100%."
+            );
+        }
+
         //var totalIncome = await _financialRepository.GetTotalIncomeAsync(month, year);
         // CHANGED: Use NetIncome for settlements
         var netIncome = await CalculateNetIncomeAsync(month, year);
@@ -140,6 +170,8 @@ public class FinancialService : IFinancialService
                 : 0;
 
             var settlementAmount = actualIncome - expectedIncome;
+            // Positive = Partner owes company
+            // Negative = Company owes partner
 
             var settlement = new Settlement
             {

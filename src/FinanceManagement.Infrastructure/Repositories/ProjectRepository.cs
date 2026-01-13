@@ -1,7 +1,8 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using FinanceManagement.Application.Interfaces;
 using FinanceManagement.Domain.Entities;
 using FinanceManagement.Infrastructure.Data;
+using FinanceManagement.Application.DTOs;
 
 namespace FinanceManagement.Infrastructure.Repositories;
 
@@ -14,11 +15,16 @@ public class ProjectRepository : IProjectRepository
         _context = context;
     }
 
+    // ✅ FIXED: Eager loading (No N+1)
     public async Task<Project?> GetByIdAsync(int id)
     {
         return await _context.Projects
             .Include(p => p.ManagedByPartner)
                 .ThenInclude(p => p.User)
+            .Include(p => p.ProjectEmployees)
+                .ThenInclude(pe => pe.Employee)
+                    .ThenInclude(e => e.User)
+            .AsNoTracking()
             .FirstOrDefaultAsync(p => p.Id == id);
     }
 
@@ -50,6 +56,7 @@ public class ProjectRepository : IProjectRepository
             .ToListAsync();
     }
 
+
     //public async Task<IEnumerable<Project>> GetByPartnerAsync(int partnerId)
     //{
     //    return await _context.Projects
@@ -60,20 +67,35 @@ public class ProjectRepository : IProjectRepository
     public async Task<IEnumerable<Project>> GetByPartnerAsync(int partnerId)
     {
         return await _context.Projects
-            .Where(p => p.ManagedByPartnerId == partnerId)
-            .Include(p => p.ManagedByPartner)
-                .ThenInclude(p => p.User)
             .AsNoTracking()
+            .Where(p => p.ManagedByPartnerId == partnerId)
+            .Include(p => p.ProjectEmployees)
             .ToListAsync();
     }
 
 
+    //public async Task<Project> CreateAsync(Project project)
+    //{
+    //    _context.Projects.Add(project);
+    //    await _context.SaveChangesAsync();
+    //    return project;
+    //}
+
+    // ✅ Existing validation preserved
     public async Task<Project> CreateAsync(Project project)
     {
+        var partnerExists = await _context.Partners
+            .AnyAsync(p => p.Id == project.ManagedByPartnerId);
+
+        if (!partnerExists)
+            throw new ArgumentException($"Invalid Partner ID: {project.ManagedByPartnerId}");
+
         _context.Projects.Add(project);
         await _context.SaveChangesAsync();
         return project;
     }
+
+
 
     public async Task<Project> UpdateAsync(Project project)
     {
@@ -82,15 +104,17 @@ public class ProjectRepository : IProjectRepository
         return project;
     }
 
+    // ✅ N+1 safe assignment check
     public async Task AssignEmployeeAsync(int projectId, int employeeId, string? role = null)
     {
         var exists = await _context.ProjectEmployees
-        .AnyAsync(pe => pe.ProjectId == projectId && pe.EmployeeId == employeeId && pe.IsActive);
+            .AnyAsync(pe => pe.ProjectId == projectId &&
+                            pe.EmployeeId == employeeId &&
+                            pe.IsActive);
 
         if (exists)
-        {
-            throw new InvalidOperationException("Employee is already assigned to this project.");
-        }
+            throw new InvalidOperationException("Employee already assigned.");
+
         var assignment = new ProjectEmployee
         {
             ProjectId = projectId,
@@ -114,25 +138,50 @@ public class PartnerRepository : IPartnerRepository
         _context = context;
     }
 
+    // ✅ Optimized with AsNoTracking
     public async Task<Partner?> GetByIdAsync(int id)
     {
         return await _context.Partners
             .Include(p => p.User)
+            .AsNoTracking()
             .FirstOrDefaultAsync(p => p.Id == id);
     }
 
-    public async Task<IEnumerable<Partner>> GetAllAsync()
+    // ✅ TASK-006 CORE FIX: DTO Projection
+    public async Task<IEnumerable<PartnerListDto>> GetAllAsync()
     {
         return await _context.Partners
+            .AsNoTracking()
             .Include(p => p.User)
+            .Include(p => p.Projects)
+            .Select(p => new PartnerListDto
+            {
+                Id = p.Id,
+                FullName = p.User.FirstName + " " + p.User.LastName,
+                Email = p.User.Email,
+                IsMainPartner = p.IsMainPartner,
+                ProjectCount = p.Projects.Count,
+                SharePercentage = p.SharePercentage 
+            })
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<Partner>> GetMainPartnersAsync()
+    public async Task<IEnumerable<PartnerListDto>> GetMainPartnersAsync()
     {
         return await _context.Partners
-            .Include(p => p.User)
+            .AsNoTracking()
             .Where(p => p.IsMainPartner)
+            .Include(p => p.User)
+            .Include(p => p.Projects)
+            .Select(p => new PartnerListDto
+            {
+                Id = p.Id,
+                FullName = p.User.FirstName + " " + p.User.LastName,
+                Email = p.User.Email,
+                IsMainPartner = true,
+                ProjectCount = p.Projects.Count,
+                SharePercentage = p.SharePercentage
+            })
             .ToListAsync();
     }
 
@@ -170,9 +219,11 @@ public class PartnerRepository : IPartnerRepository
     //    return projects;
     //}
 
+    // ✅ N+1 FIXED: Single SQL query
     public async Task<IEnumerable<Project>> GetPartnerProjectsAsync(int partnerId)
     {
         return await _context.Projects
+            .AsNoTracking()
             .Where(p => p.ManagedByPartnerId == partnerId)
             .Include(p => p.ProjectEmployees)
                 .ThenInclude(pe => pe.Employee)

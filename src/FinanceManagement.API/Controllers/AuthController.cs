@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using FinanceManagement.Application.Common;
 using FinanceManagement.Application.Interfaces;
 using FinanceManagement.Application.DTOs;
+using Microsoft.IdentityModel.Tokens;
 
 namespace FinanceManagement.API.Controllers;
 
@@ -20,64 +21,94 @@ public class AuthController : ControllerBase
         _logger = logger;
     }
 
+    //[HttpPost("login")]
+    //public async Task<ActionResult<ApiResponse<LoginResponseDto>>> Login([FromBody] LoginRequestDto request)
+    //{
+    //    try
+    //    {
+    //        _logger.LogInformation("Login attempt for email: {Email}", request.Email);
+
+    //        var result = await _authService.LoginAsync(request.Email, request.Password);
+
+    //        if (result == null)
+    //        {
+    //            return Unauthorized(ApiResponse<LoginResponseDto>.ErrorResult("Invalid credentials"));
+    //        }
+
+    //        var user = await _userRepository.GetByEmailAsync(request.Email);
+
+    //        if (user == null)
+    //        {
+    //            _logger.LogWarning("User not found after successful token generation for {Email}", request.Email);
+    //            return Unauthorized(ApiResponse<LoginResponseDto>.ErrorResult("Invalid credentials"));
+    //        }
+
+    //        var response = new LoginResponseDto
+    //        {
+    //            Token = token,
+    //            User = new UserDto
+    //            {
+    //                Id = user.Id,
+    //                FirstName = user.FirstName,
+    //                LastName = user.LastName,
+    //                Email = user.Email,
+    //                Role = user.Role.ToString(),
+    //                IsActive = user.IsActive
+    //            }
+    //        };
+
+    //        return Ok(ApiResponse<LoginResponseDto>.SuccessResult(response, "Login successful"));
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        _logger.LogError(ex, "Login failed for {Email}", request.Email);
+    //        return StatusCode(500, ApiResponse<LoginResponseDto>.ErrorResult("Login failed"));
+    //    }
+    //}
+
     [HttpPost("login")]
-    public async Task<ActionResult<ApiResponse<LoginResponseDto>>> Login([FromBody] LoginRequestDto request)
+    public async Task<ActionResult<ApiResponse<LoginResponseDto>>> Login(
+    [FromBody] LoginRequestDto request)
     {
         try
         {
             _logger.LogInformation("Login attempt for email: {Email}", request.Email);
 
-            var token = await _authService.LoginAsync(request.Email, request.Password);
-            
-            if (string.IsNullOrEmpty(token))
+            var result = await _authService.LoginAsync(request.Email, request.Password);
+
+            if (result == null)
             {
-                return BadRequest(ApiResponse<LoginResponseDto>.ErrorResult("Invalid credentials"));
+                return Unauthorized(
+                    ApiResponse<LoginResponseDto>.ErrorResult("Invalid credentials"));
             }
 
-            var user = await _userRepository.GetByEmailAsync(request.Email);
-
-            if (user == null)
-            {
-                _logger.LogWarning("User not found after successful token generation for {Email}", request.Email);
-                return Unauthorized(ApiResponse<LoginResponseDto>.ErrorResult("Invalid credentials"));
-            }
-
-            var response = new LoginResponseDto
-            {
-                Token = token,
-                User = new UserDto
-                {
-                    Id = user.Id,
-                    FirstName = user.FirstName,
-                    LastName = user.LastName,
-                    Email = user.Email,
-                    Role = user.Role.ToString(),
-                    IsActive = user.IsActive
-                }
-            };
-
-            return Ok(ApiResponse<LoginResponseDto>.SuccessResult(response, "Login successful"));
+            return Ok(
+                ApiResponse<LoginResponseDto>.SuccessResult(result, "Login successful"));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Login failed for {Email}", request.Email);
-            return StatusCode(500, ApiResponse<LoginResponseDto>.ErrorResult("Login failed"));
+            return StatusCode(
+                500,
+                ApiResponse<LoginResponseDto>.ErrorResult("Login failed"));
         }
     }
+
 
     [HttpPost("refresh")]
     public async Task<ActionResult<ApiResponse<string>>> RefreshToken([FromBody] RefreshTokenRequestDto request)
     {
         try
         {
-            var newToken = await _authService.RefreshTokenAsync(request.Token);
-            
-            if (string.IsNullOrEmpty(newToken))
+            var result = await _authService.RefreshTokenAsync(request.Token, request.RefreshToken);
+
+            if (result == null)
             {
-                return Unauthorized(ApiResponse<string>.ErrorResult("Invalid or expired token"));
+                return Unauthorized(ApiResponse<LoginResponseDto>.ErrorResult("Invalid or expired refresh token"));
             }
 
-            return Ok(ApiResponse<string>.SuccessResult(newToken, "Token refreshed successfully"));
+            return Ok(ApiResponse<LoginResponseDto>.SuccessResult(result, "Token refreshed successfully"));
+
         }
         catch (Exception ex)
         {
@@ -91,10 +122,17 @@ public class AuthController : ControllerBase
     {
         try
         {
-            var existingUser = await _userRepository.GetByEmailAsync(request.Email);
-            if (existingUser != null)
+            //var existingUser = await _userRepository.GetByEmailAsync(request.Email);
+            //if (existingUser != null)
+            //{
+            //    return BadRequest(ApiResponse<UserDto>.ErrorResult("Email already exists"));
+            //}
+
+            var email = request.Email.Trim().ToLower();
+
+            if (!Enum.IsDefined(typeof(FinanceManagement.Domain.Enums.UserRole), request.Role))
             {
-                return BadRequest(ApiResponse<UserDto>.ErrorResult("Email already exists"));
+                return BadRequest(ApiResponse<UserDto>.ErrorResult("Invalid role"));
             }
 
             var user = new FinanceManagement.Domain.Entities.User
@@ -126,22 +164,23 @@ public class AuthController : ControllerBase
             _logger.LogError(ex, "User registration failed for email {Email}", request.Email);
             return StatusCode(500, ApiResponse<UserDto>.ErrorResult("Registration failed"));
         }
+
     }
 }
 
-public class LoginRequestDto
-{
-    public string Email { get; set; } = string.Empty;
-    public string Password { get; set; } = string.Empty;
-}
+//public class LoginRequestDto
+//{
+//    public string Email { get; set; } = string.Empty;
+//    public string Password { get; set; } = string.Empty;
+//}
 
-public class LoginResponseDto
-{
-    public string Token { get; set; } = string.Empty;
-    public UserDto User { get; set; } = new();
-}
+//public class LoginResponseDto
+//{
+//    public string Token { get; set; } = string.Empty;
+//    public UserDto User { get; set; } = new();
+//}
 
-public class RefreshTokenRequestDto
-{
-    public string Token { get; set; } = string.Empty;
-}
+//public class RefreshTokenRequestDto
+//{
+//    public string Token { get; set; } = string.Empty;
+//}

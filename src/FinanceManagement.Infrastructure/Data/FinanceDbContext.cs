@@ -19,6 +19,7 @@ public class FinanceDbContext : DbContext
     public DbSet<BankTransaction> BankTransactions { get; set; }
     public DbSet<MonthlyExpense> MonthlyExpenses { get; set; }
     public DbSet<Settlement> Settlements { get; set; }
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -84,11 +85,12 @@ public class FinanceDbContext : DbContext
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
             entity.Property(e => e.ClientName).IsRequired().HasMaxLength(200);
             entity.HasOne(e => e.ManagedByPartner)
-                  .WithMany(p => p.ManagedProjects)
+                  .WithMany(p => p.Projects)
                   .HasForeignKey(e => e.ManagedByPartnerId);
 
             // TASK-007: Index for filtering projects by Partner
             entity.HasIndex(e => e.ManagedByPartnerId);
+
 
             // PERFORMANCE ISSUE: Missing index on ManagedByPartnerId
             // BUG: No check constraint for ProjectValue > 0
@@ -170,6 +172,8 @@ public class FinanceDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.AccountNumber).IsRequired().HasMaxLength(50);
             entity.Property(e => e.Balance).HasPrecision(18, 2);
+            entity.Property(b => b.RowVersion)
+        .IsRowVersion();
 
             entity.HasIndex(e => e.AccountNumber).IsUnique();
             // BUG: Missing unique constraint on AccountNumber
