@@ -15,17 +15,16 @@ namespace FinanceManagement.API.Controllers
         {
             _employeeRepository = employeeRepository;
         }
-
-        // ✅ GET: api/employee
+        
         [HttpGet]
         public async Task<ActionResult<ApiResponse<IEnumerable<EmployeeDto>>>> GetAll(
             [FromQuery] string? search = null)
         {
             var employees = await _employeeRepository.GetAllAsync(search);
+
             return Ok(ApiResponse<IEnumerable<EmployeeDto>>.SuccessResult(employees, "Employees retrieved successfully"));
         }
-
-        // ✅ GET: api/employee/{id}
+       
         [HttpGet("{id:int}")]
         public async Task<ActionResult<ApiResponse<EmployeeDto>>> GetById(int id)
         {
@@ -35,8 +34,7 @@ namespace FinanceManagement.API.Controllers
 
             return Ok(ApiResponse<EmployeeDto>.SuccessResult(employee, "Employee retrieved successfully"));
         }
-
-        // ✅ POST: api/employee
+      
         [HttpPost]
         public async Task<ActionResult<ApiResponse<EmployeeDto>>> Create([FromBody] CreateEmployeeDto request)
         {

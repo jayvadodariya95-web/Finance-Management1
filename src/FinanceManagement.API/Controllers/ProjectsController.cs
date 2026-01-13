@@ -30,47 +30,6 @@ public class ProjectsController : ControllerBase
         _logger = logger;
     }
 
-    //[Authorize]
-    //[HttpGet]
-    //public async Task<ActionResult<ApiResponse<IEnumerable<ProjectDto>>>> GetAllProjects()
-    //{
-    //    try
-    //    {
-    //        var projects = await _projectRepository.GetAllAsync();
-    //        var projectDtos = new List<ProjectDto>();
-
-    //        foreach (var project in projects)
-    //        {
-    //            var partner = await _partnerRepository.GetByIdAsync(project.ManagedByPartnerId);
-
-    //            var projectDto = new ProjectDto
-    //            {
-    //                Id = project.Id,
-    //                Name = project.Name,
-    //                ClientName = project.ClientName,
-    //                ProjectValue = project.ProjectValue,
-    //                StartDate = project.StartDate,
-    //                EndDate = project.EndDate,
-    //                Status = project.Status.ToString(),
-    //                // ManagedByPartner = $"{partner.User.FirstName} {partner.User.LastName}"
-    //                ManagedByPartner = partner?.User != null
-    //                ? $"{partner.User.FirstName} {partner.User.LastName}"
-    //                : "Unassigned Partner"
-
-    //            };
-
-    //            projectDtos.Add(projectDto);
-    //        }
-
-    //        return Ok(ApiResponse<IEnumerable<ProjectDto>>.SuccessResult(projectDtos));
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        _logger.LogError(ex, "Error retrieving projects");
-    //        return StatusCode(500, ApiResponse<IEnumerable<ProjectDto>>.ErrorResult("Failed to retrieve projects"));
-    //    }
-    //}
-
     [HttpGet]
     public async Task<ActionResult<ApiResponse<IEnumerable<ProjectDto>>>> GetAllProjects()
     {
@@ -168,8 +127,6 @@ public class ProjectsController : ControllerBase
             };
 
             var createdProject = await _projectRepository.CreateAsync(project);
-            //var partner = await _partnerRepository.GetByIdAsync(createdProject.ManagedByPartnerId);
-            // Reload project with navigation properties
             var fullProject = await _projectRepository.GetByIdAsync(createdProject.Id);
             var partner = fullProject?.ManagedByPartner;
 
@@ -182,7 +139,6 @@ public class ProjectsController : ControllerBase
                 StartDate = createdProject.StartDate,
                 EndDate = createdProject.EndDate,
                 Status = createdProject.Status.ToString(),
-                // ManagedByPartner = $"{partner.User.FirstName} {partner.User.LastName}"
                 ManagedByPartner = partner?.User != null
                 ? $"{partner.User.FirstName} {partner.User.LastName}"
                 : "Unassigned Partner"

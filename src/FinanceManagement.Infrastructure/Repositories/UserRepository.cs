@@ -22,7 +22,7 @@ public class UserRepository : IUserRepository
 
     public async Task<User?> GetByEmailAsync(string email)
     {
-        // PERFORMANCE ISSUE: Missing index on Email field
+
         return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
     }
 
@@ -33,7 +33,7 @@ public class UserRepository : IUserRepository
 
     public async Task<User> CreateAsync(User user)
     {
-        // BUG: No validation for duplicate emails
+        
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
         return user;

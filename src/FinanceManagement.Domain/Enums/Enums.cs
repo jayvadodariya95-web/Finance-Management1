@@ -2,9 +2,9 @@ namespace FinanceManagement.Domain.Enums;
 
 public enum UserRole
 {
-    Admin = 1,
-    Partner = 2,
-    Employee = 3
+    //Admin ,
+    Partner = 1 ,
+    Employee = 2
 }
 
 public enum ProjectStatus

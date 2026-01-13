@@ -32,7 +32,7 @@ public class FinanceDbContext : DbContext
             entity.Property(e => e.Email).IsRequired().HasMaxLength(255);
             entity.Property(e => e.FirstName).IsRequired().HasMaxLength(100);
             entity.Property(e => e.LastName).IsRequired().HasMaxLength(100);
-            entity.Property(e => e.PasswordHash).IsRequired();
+            //entity.Property(e => e.PasswordHash).IsRequired();
 
             // TASK-007: Index for fast Logins (User.Email)
             entity.HasIndex(e => e.Email).IsUnique();
