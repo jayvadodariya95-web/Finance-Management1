@@ -27,7 +27,8 @@ namespace FinanceManagement.API.Controllers
                 Id = u.Id,
                 FirstName = u.FirstName,
                 LastName = u.LastName,
-                Email = u.Email
+                Email = u.Email,
+                Role = u.Role.ToString()
             });
 
             return Ok(ApiResponse<IEnumerable<UserDto>>.SuccessResult(userDtos));
@@ -36,13 +37,22 @@ namespace FinanceManagement.API.Controllers
         [HttpPost]
         public async Task<ActionResult<ApiResponse<UserDto>>> Create([FromBody] CreateUserDto request)
         {
+            var existingUser = await _userRepository.GetByEmailAsync(request.Email);
+
+            if (existingUser != null)
+            {
+                return BadRequest(ApiResponse<UserDto>.ErrorResult($"The email '{request.Email}' is already in use."));
+            }
+
             var user = new User
             {
                 FirstName = request.FirstName,
                 LastName = request.LastName,
                 Email = request.Email,
-                Role = request.Role 
-                
+                Role = request.Role,
+                CreatedAt = DateTime.UtcNow,
+                IsActive = true
+
             };
 
             var users = await _userRepository.CreateAsync(user);
@@ -53,7 +63,8 @@ namespace FinanceManagement.API.Controllers
                 FirstName = users.FirstName,
                 LastName = users.LastName,
                 Email = users.Email,
-                Role = users.Role.ToString()
+                Role = users.Role.ToString(),
+                IsActive = users.IsActive
 
             };
 

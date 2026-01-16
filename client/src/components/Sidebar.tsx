@@ -6,7 +6,7 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ selected, onSelect }) => {
-    const sections = ["Projects", "Employees", "Expenses", "Details"];
+    const sections = ["Projects", "Employees", "Expenses", "Details","Users"];
     return (
         <div className="w-64 bg-gray-100 h-screen p-4">
             <h2 className="text-xl font-bold mb-4">Menu</h2>
