@@ -63,10 +63,6 @@ public class CreateProjectDtoValidator : AbstractValidator<ProjectDto>
         RuleFor(x => x.EndDate)
             .GreaterThan(x => x.StartDate)
             .When(x => x.EndDate.HasValue);
-
-        RuleFor(p => p.ProjectValue)
-           .GreaterThanOrEqualTo(0)
-           .WithMessage("Project value must be positive");
     }
 }
 

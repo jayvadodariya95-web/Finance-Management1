@@ -32,8 +32,7 @@ namespace FinanceManagement.Infrastructure.Migrations
 
                     b.Property<string>("AccountHolderName")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("AccountNumber")
                         .IsRequired()
@@ -46,8 +45,7 @@ namespace FinanceManagement.Infrastructure.Migrations
 
                     b.Property<string>("BankName")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -57,16 +55,7 @@ namespace FinanceManagement.Infrastructure.Migrations
 
                     b.Property<string>("Currency")
                         .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<decimal>("CurrentBalance")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("IfscCode")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -79,11 +68,6 @@ namespace FinanceManagement.Infrastructure.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
-
-                    b.Property<string>("SwiftCode")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -398,16 +382,13 @@ namespace FinanceManagement.Infrastructure.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("ManagedByPartnerId")
+                    b.Property<int>("ManagedByPartnerId")
                         .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
-
-                    b.Property<int?>("PartnerId")
-                        .HasColumnType("int");
 
                     b.Property<decimal>("ProjectValue")
                         .HasColumnType("decimal(18,2)");
@@ -427,8 +408,6 @@ namespace FinanceManagement.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ManagedByPartnerId");
-
-                    b.HasIndex("PartnerId");
 
                     b.ToTable("Projects");
                 });
@@ -485,37 +464,6 @@ namespace FinanceManagement.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("ProjectEmployees");
-                });
-
-            modelBuilder.Entity("FinanceManagement.Domain.Entities.RefreshToken", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("ExpiresAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsRevoked")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Token")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("RefreshTokens");
                 });
 
             modelBuilder.Entity("FinanceManagement.Domain.Entities.Settlement", b =>
@@ -689,12 +637,10 @@ namespace FinanceManagement.Infrastructure.Migrations
             modelBuilder.Entity("FinanceManagement.Domain.Entities.Project", b =>
                 {
                     b.HasOne("FinanceManagement.Domain.Entities.Partner", "ManagedByPartner")
-                        .WithMany("Projects")
-                        .HasForeignKey("ManagedByPartnerId");
-
-                    b.HasOne("FinanceManagement.Domain.Entities.Partner", null)
                         .WithMany("ManagedProjects")
-                        .HasForeignKey("PartnerId");
+                        .HasForeignKey("ManagedByPartnerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("ManagedByPartner");
                 });
@@ -716,17 +662,6 @@ namespace FinanceManagement.Infrastructure.Migrations
                     b.Navigation("Employee");
 
                     b.Navigation("Project");
-                });
-
-            modelBuilder.Entity("FinanceManagement.Domain.Entities.RefreshToken", b =>
-                {
-                    b.HasOne("FinanceManagement.Domain.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("FinanceManagement.Domain.Entities.Settlement", b =>
@@ -760,8 +695,6 @@ namespace FinanceManagement.Infrastructure.Migrations
             modelBuilder.Entity("FinanceManagement.Domain.Entities.Partner", b =>
                 {
                     b.Navigation("ManagedProjects");
-
-                    b.Navigation("Projects");
 
                     b.Navigation("Settlements");
                 });

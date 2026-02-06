@@ -136,74 +136,28 @@ public class FinancialController : ControllerBase
         }
     }
 
-    //[Authorize(Policy = "AdminOnly")]
-    //[HttpGet("transactions")]
-    //public async Task<ActionResult<ApiResponse<IEnumerable<BankTransactionDto>>>> GetTransactions(
-    //     [FromQuery] int pageNumber = 1,
-    //     [FromQuery] int pageSize = 20,
-    //    [FromQuery] DateTime? startDate = null,
-    //    [FromQuery] DateTime? endDate = null)
-    //{
-    //    try
-    //    {
-    //        IEnumerable<FinanceManagement.Domain.Entities.BankTransaction> transactions;
-
-    //        if (startDate.HasValue && endDate.HasValue)
-    //        {
-    //            // PERFORMANCE ISSUE: No pagination for potentially large datasets
-    //            transactions = await _transactionRepository.GetByDateRangeAsync(startDate.Value, endDate.Value);
-    //        }
-    //        else
-    //        {
-    //            // BUG: Loading ALL transactions without any filtering
-    //            transactions = await _transactionRepository.GetAllAsync();
-    //        }
-
-    //        var transactionDtos = transactions.Select(t => new BankTransactionDto
-    //        {
-    //            Id = t.Id,
-    //            BankAccountName = t.BankAccount?.BankName ?? "Unknown",
-    //            ProjectName = t.Project?.Name,
-    //            Amount = t.Amount,
-    //            Type = t.Type.ToString(),
-    //            Description = t.Description,
-    //            TransactionDate = t.TransactionDate,
-    //            IsProcessed = t.IsProcessed
-    //        });
-
-    //        return Ok(ApiResponse<IEnumerable<BankTransactionDto>>.SuccessResult(transactionDtos));
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        _logger.LogError(ex, "Error retrieving transactions");
-    //        return StatusCode(500, ApiResponse<IEnumerable<BankTransactionDto>>.ErrorResult("Failed to retrieve transactions"));
-    //    }
-    //}
-
     [Authorize(Policy = "AdminOnly")]
     [HttpGet("transactions")]
-    public async Task<ActionResult<ApiResponse<PagedResultDto<BankTransactionDto>>>> GetTransactions(
-    [FromQuery] int pageNumber = 1,
-    [FromQuery] int pageSize = 20,
-    [FromQuery] DateTime? startDate = null,
-    [FromQuery] DateTime? endDate = null)
+    public async Task<ActionResult<ApiResponse<IEnumerable<BankTransactionDto>>>> GetTransactions(
+        [FromQuery] DateTime? startDate, 
+        [FromQuery] DateTime? endDate)
     {
         try
         {
-            if (pageNumber <= 0 || pageSize <= 0 || pageSize > 100)
+            IEnumerable<FinanceManagement.Domain.Entities.BankTransaction> transactions;
+            
+            if (startDate.HasValue && endDate.HasValue)
             {
-                return BadRequest(ApiResponse<PagedResultDto<BankTransactionDto>>
-                    .ErrorResult("Invalid pagination values"));
+                // PERFORMANCE ISSUE: No pagination for potentially large datasets
+                transactions = await _transactionRepository.GetByDateRangeAsync(startDate.Value, endDate.Value);
+            }
+            else
+            {
+                // BUG: Loading ALL transactions without any filtering
+                transactions = await _transactionRepository.GetAllAsync();
             }
 
-            var pagedResult = await _transactionRepository.GetPagedAsync(
-                pageNumber,
-                pageSize,
-                startDate,
-                endDate
-            );
-
-            var dtoItems = pagedResult.Items.Select(t => new BankTransactionDto
+            var transactionDtos = transactions.Select(t => new BankTransactionDto
             {
                 Id = t.Id,
                 BankAccountName = t.BankAccount?.BankName ?? "Unknown",
@@ -215,26 +169,14 @@ public class FinancialController : ControllerBase
                 IsProcessed = t.IsProcessed
             });
 
-            var response = new PagedResultDto<BankTransactionDto>
-            {
-                PageNumber = pagedResult.PageNumber,
-                PageSize = pagedResult.PageSize,
-                TotalRecords = pagedResult.TotalRecords,
-                Items = dtoItems
-            };
-
-            return Ok(ApiResponse<PagedResultDto<BankTransactionDto>>
-                .SuccessResult(response));
+            return Ok(ApiResponse<IEnumerable<BankTransactionDto>>.SuccessResult(transactionDtos));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving transactions");
-            return StatusCode(500,
-                ApiResponse<PagedResultDto<BankTransactionDto>>
-                .ErrorResult("Failed to retrieve transactions"));
+            return StatusCode(500, ApiResponse<IEnumerable<BankTransactionDto>>.ErrorResult("Failed to retrieve transactions"));
         }
     }
-
 
     [Authorize(Policy = "AdminOnly")]
     [HttpPost("transactions")]

@@ -64,7 +64,7 @@
 **Expected**: Indexes on foreign keys and search columns
 **Actual**: Missing indexes causing performance degradation
 
-### BUG-007: Loading All Transactions Without Pagination - DONE
+### BUG-007: Loading All Transactions Without Pagination
 **Description**: Financial transactions loaded without pagination causing memory issues
 **Location**: `FinancialController.GetTransactions()`
 **Steps to Reproduce**:
@@ -74,7 +74,7 @@
 **Expected**: Paginated results
 **Actual**: All records loaded causing memory issues
 
-### BUG-008: Client-Side Financial Calculations - DONE
+### BUG-008: Client-Side Financial Calculations
 **Description**: Financial calculations performed on client side instead of database
 **Location**: `FinancialRepository.GetTotalSalariesAsync()`
 **Steps to Reproduce**:
@@ -86,7 +86,7 @@
 
 ## Business Logic Bugs (Priority: MEDIUM)
 
-### BUG-009: Incorrect Settlement Calculation Logic - DONE
+### BUG-009: Incorrect Settlement Calculation Logic
 **Description**: Partner settlement calculation doesn't consider share percentage properly
 **Location**: `FinancialService.CalculatePartnerSettlementAsync()`
 **Steps to Reproduce**:
@@ -106,7 +106,7 @@
 **Expected**: Single source of expense data
 **Actual**: Double counting from multiple sources
 
-### BUG-011: Duplicate Project Assignment Logic - DONE
+### BUG-011: Duplicate Project Assignment Logic - 
 **Description**: Same employee can be assigned to same project multiple times
 **Location**: `ProjectRepository.AssignEmployeeAsync()`
 **Steps to Reproduce**:
@@ -128,7 +128,7 @@
 
 ## Concurrency Issues (Priority: MEDIUM)
 
-### BUG-013: Bank Balance Race Condition - DONE
+### BUG-013: Bank Balance Race Condition
 **Description**: Bank account balance updates not thread-safe
 **Location**: `BankTransactionRepository.CreateAsync()`
 **Steps to Reproduce**:
@@ -138,7 +138,7 @@
 **Expected**: Atomic balance updates with proper locking
 **Actual**: Race condition causing incorrect balances
 
-### BUG-014: Duplicate Settlement Processing - DONE
+### BUG-014: Duplicate Settlement Processing
 **Description**: Same month settlements can be processed multiple times
 **Location**: `FinancialService.ProcessSettlementsAsync()`
 **Steps to Reproduce**:

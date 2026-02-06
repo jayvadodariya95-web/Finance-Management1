@@ -6,9 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using FinanceManagement.Application.Interfaces;
 using FinanceManagement.Domain.Entities;
 using Microsoft.EntityFrameworkCore; // NEEDED for .Include()
-using FinanceManagement.Infrastructure.Data;
-using System.Security.Cryptography;
-using FinanceManagement.Application.DTOs; // NEEDED for DbContext
+using FinanceManagement.Infrastructure.Data; // NEEDED for DbContext
 
 namespace FinanceManagement.Infrastructure.Services;
 
@@ -26,180 +24,95 @@ public class AuthService : IAuthService
         _configuration = configuration;
     }
 
-    //public async Task<string> LoginAsync(string email, string password)
-    //{
-    //    //// BUG: No rate limiting or account lockout
-    //    //var user = await _userRepository.GetByEmailAsync(email);
-    //    // CHANGE 2: Load User AND their Partner profile
-    //    var user = await _context.Users
-    //        .Include(u => u.Partner) // <--- CRITICAL: This loads the Partner ID
-    //        .FirstOrDefaultAsync(u => u.Email == email);
-
-    //    if (user == null || !user.IsActive)
-    //    {
-    //        // BUG: Same response time for invalid user and wrong password (timing attack)
-    //        return string.Empty;
-    //    }
-
-    //    // BUG: No protection against timing attacks
-    //    if (!BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
-    //    {
-    //        return string.Empty;
-    //    }
-
-    //    return GenerateJwtToken(user);
-    //}
-
-    public async Task<LoginResponseDto?> LoginAsync(string email, string password)
+    public async Task<string> LoginAsync(string email, string password)
     {
+        //// BUG: No rate limiting or account lockout
+        //var user = await _userRepository.GetByEmailAsync(email);
+        // CHANGE 2: Load User AND their Partner profile
         var user = await _context.Users
-            .Include(u => u.Partner)
+            .Include(u => u.Partner) // <--- CRITICAL: This loads the Partner ID
             .FirstOrDefaultAsync(u => u.Email == email);
 
         if (user == null || !user.IsActive)
-            return null;
+        {
+            // BUG: Same response time for invalid user and wrong password (timing attack)
+            return string.Empty;
+        }
 
+        // BUG: No protection against timing attacks
         if (!BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
-            return null;
-
-        var accessToken = GenerateJwtToken(user);
-        var refreshToken = GenerateRefreshToken();
-
-        var refreshTokenEntity = new RefreshToken
         {
-            Token = refreshToken,
-            UserId = user.Id,
-            ExpiresAt = DateTime.UtcNow.AddDays(7),
-            IsRevoked = false
-        };
+            return string.Empty;
+        }
 
-        _context.RefreshTokens.Add(refreshTokenEntity);
-        await _context.SaveChangesAsync();
-
-        return new LoginResponseDto
-        {
-            Token = accessToken,
-            RefreshToken = refreshToken,
-            User = new UserDto
-            {
-                Id = user.Id,
-                Email = user.Email,
-                Role = user.Role.ToString()
-            }
-        };
+        return GenerateJwtToken(user);
     }
 
-    //public async Task<string> RefreshTokenAsync(string token)
-    //{
-    //    try
-    //    {
-    //        // BUG: No proper refresh token implementation - just validating and regenerating
-    //        var isValid = await ValidateTokenAsync(token);
-    //        if (!isValid)
-    //        {
-    //            return string.Empty;
-    //        }
-
-    //        // BUG: Extracting user from expired token without proper validation
-    //        var handler = new JwtSecurityTokenHandler();
-    //        var jsonToken = handler.ReadJwtToken(token);
-    //        var emailClaim = jsonToken.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email);
-
-    //        if (emailClaim == null)
-    //        {
-    //            return string.Empty;
-    //        }
-
-    //        //var user = await _userRepository.GetByEmailAsync(emailClaim.Value);
-    //        //if (user == null)
-    //        //{
-    //        //    return string.Empty;
-    //        //}
-
-    //        // Update refresh logic to also include Partner
-    //        var user = await _context.Users
-    //            .Include(u => u.Partner)
-    //            .FirstOrDefaultAsync(u => u.Email == emailClaim.Value);
-
-    //        if (user == null) return string.Empty;
-
-    //        return GenerateJwtToken(user);
-    //    }
-    //    catch
-    //    {
-    //        return string.Empty;
-    //    }
-    //}
-
-    public async Task<LoginResponseDto?> RefreshTokenAsync(string accessToken ,string refreshToken )
+    public async Task<string> RefreshTokenAsync(string token)
     {
-        var storedToken = await _context.RefreshTokens
-            .Include(r => r.User)
-            .ThenInclude(u => u.Partner)
-            .FirstOrDefaultAsync(r =>
-                r.Token == refreshToken &&
-                !r.IsRevoked &&
-                r.ExpiresAt > DateTime.UtcNow);
-
-        if (storedToken == null)
-            return null;
-
-        // Revoke old token
-        storedToken.IsRevoked = true;
-
-        // Create new refresh token
-        var newRefreshToken = GenerateRefreshToken();
-        _context.RefreshTokens.Add(new RefreshToken
+        try
         {
-            Token = newRefreshToken,
-            UserId = storedToken.UserId,
-            ExpiresAt = DateTime.UtcNow.AddDays(7),
-            IsRevoked = false
-        });
-
-        await _context.SaveChangesAsync();
-
-        var newAccessToken = GenerateJwtToken(storedToken.User);
-
-        return new LoginResponseDto
-        {
-            Token = newAccessToken,
-            RefreshToken = newRefreshToken,
-            User = new UserDto
+            // BUG: No proper refresh token implementation - just validating and regenerating
+            var isValid = await ValidateTokenAsync(token);
+            if (!isValid)
             {
-                Id = storedToken.User.Id,
-                Email = storedToken.User.Email,
-                Role = storedToken.User.Role.ToString()
+                return string.Empty;
             }
-        };
+
+            // BUG: Extracting user from expired token without proper validation
+            var handler = new JwtSecurityTokenHandler();
+            var jsonToken = handler.ReadJwtToken(token);
+            var emailClaim = jsonToken.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email);
+
+            if (emailClaim == null)
+            {
+                return string.Empty;
+            }
+
+            //var user = await _userRepository.GetByEmailAsync(emailClaim.Value);
+            //if (user == null)
+            //{
+            //    return string.Empty;
+            //}
+
+            // Update refresh logic to also include Partner
+            var user = await _context.Users
+                .Include(u => u.Partner)
+                .FirstOrDefaultAsync(u => u.Email == emailClaim.Value);
+
+            if (user == null) return string.Empty;
+
+            return GenerateJwtToken(user);
+        }
+        catch
+        {
+            return string.Empty;
+        }
     }
 
-    public Task<bool> ValidateTokenAsync(string token)
+    public async Task<bool> ValidateTokenAsync(string token)
     {
         try
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_configuration["JwtSettings:SecretKey"]!);
+            var key = Encoding.ASCII.GetBytes(_configuration["JwtSettings:SecretKey"] ?? "");
 
             tokenHandler.ValidateToken(token, new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(key),
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidIssuer = _configuration["JwtSettings:Issuer"],
-                ValidAudience = _configuration["JwtSettings:Audience"],
+                ValidateIssuer = false, // BUG: Should validate issuer
+                ValidateAudience = false, // BUG: Should validate audience
                 ClockSkew = TimeSpan.Zero
-            }, out _);
+            }, out SecurityToken validatedToken);
 
-            return Task.FromResult(true);
+            return true;
         }
         catch
         {
-            return Task.FromResult(false);
+            return false;
         }
     }
-
 
     //private string GenerateJwtToken(User user)
     //{
@@ -227,22 +140,10 @@ public class AuthService : IAuthService
     //    return tokenHandler.WriteToken(token);
     //}
 
-    private static string GenerateRefreshToken()
-    {
-        return Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
-    }
-
-
     private string GenerateJwtToken(User user)
     {
-        //var tokenHandler = new JwtSecurityTokenHandler();
-        //var key = Encoding.ASCII.GetBytes(_configuration["JwtSettings:SecretKey"]!);
-
-        var secretKey = Environment.GetEnvironmentVariable("JWT_SECRET")
-            ?? throw new Exception("JWT_SECRET not configured");
-
-        var key = Encoding.UTF8.GetBytes(secretKey);
         var tokenHandler = new JwtSecurityTokenHandler();
+        var key = Encoding.ASCII.GetBytes(_configuration["JwtSettings:SecretKey"]!);
 
         //var tokenDescriptor = new SecurityTokenDescriptor
         //{

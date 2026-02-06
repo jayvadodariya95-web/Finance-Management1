@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -76,11 +76,8 @@ builder.Services.AddScoped<IFinancialService, FinancialService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-var secretKey = Environment.GetEnvironmentVariable("JWT_SECRET")
-    ?? throw new Exception("JWT_SECRET not configured");
-
-var key = Encoding.UTF8.GetBytes(secretKey);
-
+var secretKey = jwtSettings["SecretKey"];
+var key = Encoding.ASCII.GetBytes(secretKey!);
 
 builder.Services.AddAuthentication(x =>
 {
@@ -103,7 +100,7 @@ builder.Services.AddAuthentication(x =>
         RoleClaimType = ClaimTypes.Role
     };
 });
-
+// ------------------- Authorization Policies -------------------
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdminOnly",
@@ -116,35 +113,23 @@ builder.Services.AddAuthorization(options =>
         policy => policy.RequireRole("Admin", "Partner"));
 });
 
-
-var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>()
-                     ?? Array.Empty<string>();
-
 builder.Services.AddCors(options =>
 {
-    
-    options.AddPolicy("DevelopmentPolicy", policy =>
-    {
-        policy.WithOrigins("http://localhost:3000",
-    "http://localhost:5173", "http://localhost:5178")
-              .AllowAnyMethod()
-              .AllowAnyHeader()
-              .AllowCredentials();
-    });
-
-    options.AddPolicy("ProductionPolicy", policy =>
-    {
-        policy.WithOrigins(allowedOrigins)
-              .WithMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-              .AllowAnyHeader()
-              .AllowCredentials();
-    });
+    options.AddPolicy("DefaultPolicy",
+        builder =>
+        {
+            // NEW CODE (TASK-004): Allow All for Development
+            builder.AllowAnyOrigin()
+                   .AllowAnyMethod()
+                   .AllowAnyHeader();
+            //builder.WithOrigins("http://localhost:3000", "https://localhost:3000")
+            //       .AllowAnyMethod()
+            //       .AllowAnyHeader();
+        });
 });
-// -----------------------------------------------------------------------
 
 var app = builder.Build();
 
-// 8. Middleware Pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -152,16 +137,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-// ✅ TASK-004: Apply Correct CORS Policy
-if (app.Environment.IsDevelopment())
-{
-    app.UseCors("DevelopmentPolicy");
-}
-else
-{
-    app.UseCors("ProductionPolicy");
-}
+app.UseCors("DefaultPolicy");
 app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
