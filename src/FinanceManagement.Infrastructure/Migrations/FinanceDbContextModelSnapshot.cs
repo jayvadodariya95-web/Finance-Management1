@@ -63,12 +63,6 @@ namespace FinanceManagement.Infrastructure.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
-
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -76,9 +70,6 @@ namespace FinanceManagement.Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AccountNumber")
-                        .IsUnique();
 
                     b.ToTable("BankAccounts");
                 });
@@ -137,8 +128,6 @@ namespace FinanceManagement.Infrastructure.Migrations
                     b.HasIndex("BankAccountId");
 
                     b.HasIndex("ProjectId");
-
-                    b.HasIndex("TransactionDate");
 
                     b.ToTable("BankTransactions");
                 });
@@ -208,7 +197,7 @@ namespace FinanceManagement.Infrastructure.Migrations
 
                     b.Property<string>("EmployeeCode")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -238,9 +227,6 @@ namespace FinanceManagement.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("BranchId");
-
-                    b.HasIndex("EmployeeCode")
-                        .IsUnique();
 
                     b.HasIndex("UserId")
                         .IsUnique();
@@ -299,8 +285,6 @@ namespace FinanceManagement.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Month", "Year");
 
                     b.ToTable("MonthlyExpenses");
                 });
@@ -460,8 +444,7 @@ namespace FinanceManagement.Infrastructure.Migrations
 
                     b.HasIndex("EmployeeId");
 
-                    b.HasIndex("ProjectId", "EmployeeId")
-                        .IsUnique();
+                    b.HasIndex("ProjectId");
 
                     b.ToTable("ProjectEmployees");
                 });
@@ -521,8 +504,7 @@ namespace FinanceManagement.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PartnerId", "Month", "Year")
-                        .IsUnique();
+                    b.HasIndex("PartnerId");
 
                     b.ToTable("Settlements");
                 });
@@ -576,9 +558,6 @@ namespace FinanceManagement.Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Email")
-                        .IsUnique();
 
                     b.ToTable("Users");
                 });

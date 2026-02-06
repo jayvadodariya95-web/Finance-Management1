@@ -35,13 +35,7 @@ public class AuthController : ControllerBase
             }
 
             var user = await _userRepository.GetByEmailAsync(request.Email);
-
-            if (user == null)
-            {
-                _logger.LogWarning("User not found after successful token generation for {Email}", request.Email);
-                return Unauthorized(ApiResponse<LoginResponseDto>.ErrorResult("Invalid credentials"));
-            }
-
+            
             var response = new LoginResponseDto
             {
                 Token = token,
@@ -81,7 +75,6 @@ public class AuthController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Token refresh failed");
             return StatusCode(500, ApiResponse<string>.ErrorResult("Token refresh failed"));
         }
     }
@@ -123,7 +116,6 @@ public class AuthController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "User registration failed for email {Email}", request.Email);
             return StatusCode(500, ApiResponse<UserDto>.ErrorResult("Registration failed"));
         }
     }

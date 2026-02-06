@@ -1,5 +1,4 @@
-﻿using FinanceManagement.Domain.Common;
-using System.ComponentModel.DataAnnotations;
+using FinanceManagement.Domain.Common;
 
 namespace FinanceManagement.Domain.Entities;
 
@@ -11,11 +10,7 @@ public class BankAccount : BaseEntity
     public decimal Balance { get; set; }
     public string Currency { get; set; } = "USD";
     public bool IsActive { get; set; } = true;
-
-    // ✅ FIX BUG-013: Optimistic Concurrency Control
-    [Timestamp]
-    public byte[] RowVersion { get; set; } = null!;
-
+    
     // Navigation properties
     public ICollection<BankTransaction> Transactions { get; set; } = new List<BankTransaction>();
     
