@@ -4,6 +4,23 @@ export interface ApiResponse<T> {
     data: T;
 }
 
+export interface UserDto {
+
+    id: number;
+    firstName: string;
+    lastName: string;
+    email: string;
+    role: string;
+}
+
+export interface CreateUserDto {
+
+    firstName: string;
+    lastName: string;
+    email: string;
+    role: string;
+}
+
 export interface ProjectDto {
     id: number;
     name: string;
