@@ -5,34 +5,25 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using FinanceManagement.Application.Interfaces;
 using FinanceManagement.Domain.Entities;
-using Microsoft.EntityFrameworkCore; // NEEDED for .Include()
-using FinanceManagement.Infrastructure.Data; // NEEDED for DbContext
 
 namespace FinanceManagement.Infrastructure.Services;
 
 public class AuthService : IAuthService
 {
-    // CHANGE 1: Use Context directly to handle complex Includes easily
-    private readonly FinanceDbContext _context;
     private readonly IUserRepository _userRepository;
     private readonly IConfiguration _configuration;
 
-    public AuthService(FinanceDbContext context, IUserRepository userRepository, IConfiguration configuration)
+    public AuthService(IUserRepository userRepository, IConfiguration configuration)
     {
-        _context = context;
         _userRepository = userRepository;
         _configuration = configuration;
     }
 
     public async Task<string> LoginAsync(string email, string password)
     {
-        //// BUG: No rate limiting or account lockout
-        //var user = await _userRepository.GetByEmailAsync(email);
-        // CHANGE 2: Load User AND their Partner profile
-        var user = await _context.Users
-            .Include(u => u.Partner) // <--- CRITICAL: This loads the Partner ID
-            .FirstOrDefaultAsync(u => u.Email == email);
-
+        // BUG: No rate limiting or account lockout
+        var user = await _userRepository.GetByEmailAsync(email);
+        
         if (user == null || !user.IsActive)
         {
             // BUG: Same response time for invalid user and wrong password (timing attack)
@@ -63,24 +54,17 @@ public class AuthService : IAuthService
             var handler = new JwtSecurityTokenHandler();
             var jsonToken = handler.ReadJwtToken(token);
             var emailClaim = jsonToken.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email);
-
+            
             if (emailClaim == null)
             {
                 return string.Empty;
             }
 
-            //var user = await _userRepository.GetByEmailAsync(emailClaim.Value);
-            //if (user == null)
-            //{
-            //    return string.Empty;
-            //}
-
-            // Update refresh logic to also include Partner
-            var user = await _context.Users
-                .Include(u => u.Partner)
-                .FirstOrDefaultAsync(u => u.Email == emailClaim.Value);
-
-            if (user == null) return string.Empty;
+            var user = await _userRepository.GetByEmailAsync(emailClaim.Value);
+            if (user == null)
+            {
+                return string.Empty;
+            }
 
             return GenerateJwtToken(user);
         }
@@ -96,7 +80,7 @@ public class AuthService : IAuthService
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_configuration["JwtSettings:SecretKey"] ?? "");
-
+            
             tokenHandler.ValidateToken(token, new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,
@@ -114,82 +98,28 @@ public class AuthService : IAuthService
         }
     }
 
-    //private string GenerateJwtToken(User user)
-    //{
-    //    var tokenHandler = new JwtSecurityTokenHandler();
-    //    var key = Encoding.ASCII.GetBytes(_configuration["JwtSettings:SecretKey"] ?? "");
-
-    //    var tokenDescriptor = new SecurityTokenDescriptor
-    //    {
-    //        Subject = new ClaimsIdentity(new[]
-    //        {
-    //            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-    //            new Claim(ClaimTypes.Email, user.Email),
-    //            new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}"),
-    //            new Claim(ClaimTypes.Role, user.Role.ToString())
-    //        }),
-    //        Expires = DateTime.UtcNow.AddMinutes(int.Parse(_configuration["JwtSettings:ExpiryMinutes"] ?? "60")),
-    //        SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
-    //        Issuer = _configuration["JwtSettings:Issuer"],       // <-- add this
-    //        Audience = _configuration["JwtSettings:Audience"]
-
-    //        // BUG: Not setting Issuer and Audience
-    //    };
-
-    //    var token = tokenHandler.CreateToken(tokenDescriptor);
-    //    return tokenHandler.WriteToken(token);
-    //}
-
     private string GenerateJwtToken(User user)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.ASCII.GetBytes(_configuration["JwtSettings:SecretKey"]!);
-
-        //var tokenDescriptor = new SecurityTokenDescriptor
-        //{
-        //    Subject = new ClaimsIdentity(new[]
-        //    {
-        //    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-        //    new Claim(ClaimTypes.Email, user.Email),
-        //    new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}"),
-        //    new Claim(ClaimTypes.Role, user.Role.ToString()) // "Admin"
-        //}),
-
-        // Create the basic list of claims
-        var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Email, user.Email),
-            new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}"),
-            new Claim(ClaimTypes.Role, user.Role.ToString())
-        };
-
-        // CHANGE 3: Add PartnerId Claim if it exists
-        if (user.Partner != null)
-        {
-            // This allows the Controller to check User.FindFirst("PartnerId")
-            claims.Add(new Claim("PartnerId", user.Partner.Id.ToString()));
-        }
-
+        var key = Encoding.ASCII.GetBytes(_configuration["JwtSettings:SecretKey"] ?? "");
+        
         var tokenDescriptor = new SecurityTokenDescriptor
         {
-            Subject = new ClaimsIdentity(claims),
-            Expires = DateTime.UtcNow.AddMinutes(
-                int.Parse(_configuration["JwtSettings:ExpiryMinutes"]!)
-            ),
-            SigningCredentials = new SigningCredentials(
-                new SymmetricSecurityKey(key),
-                SecurityAlgorithms.HmacSha256Signature
-            ),
-            Issuer = _configuration["JwtSettings:Issuer"],
-            Audience = _configuration["JwtSettings:Audience"]
+            Subject = new ClaimsIdentity(new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}"),
+                new Claim(ClaimTypes.Role, user.Role.ToString())
+            }),
+            Expires = DateTime.UtcNow.AddMinutes(int.Parse(_configuration["JwtSettings:ExpiryMinutes"] ?? "60")),
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
+            // BUG: Not setting Issuer and Audience
         };
 
         var token = tokenHandler.CreateToken(tokenDescriptor);
         return tokenHandler.WriteToken(token);
     }
-
-
 }
 
 // SECURITY VULNERABILITIES:
