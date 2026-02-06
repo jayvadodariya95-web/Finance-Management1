@@ -140,7 +140,7 @@ public class AuthController : ControllerBase
                 FirstName = request.FirstName,
                 LastName = request.LastName,
                 Email = request.Email,
-                //PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
                 Role = (FinanceManagement.Domain.Enums.UserRole)request.Role,
                 IsActive = true
             };

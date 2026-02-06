@@ -187,8 +187,8 @@ static async Task SeedData(FinanceDbContext context)
                 FirstName = "Admin",
                 LastName = "User",
                 Email = "admin@company.com",
-                //PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin123!"),
-                //Role = FinanceManagement.Domain.Enums.UserRole.Admin,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin123!"),
+                Role = FinanceManagement.Domain.Enums.UserRole.Admin,
                 IsActive = true
             },
             new FinanceManagement.Domain.Entities.User
@@ -196,7 +196,7 @@ static async Task SeedData(FinanceDbContext context)
                 FirstName = "John",
                 LastName = "Partner",
                 Email = "partner1@company.com",
-                //PasswordHash = BCrypt.Net.BCrypt.HashPassword("Partner123!"),
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Partner123!"),
                 Role = FinanceManagement.Domain.Enums.UserRole.Partner,
                 IsActive = true
             }
