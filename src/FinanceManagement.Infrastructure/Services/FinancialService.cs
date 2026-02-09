@@ -1,8 +1,10 @@
+using FinanceManagement.Application.Common;
 using FinanceManagement.Application.DTOs;
 using FinanceManagement.Application.Interfaces;
 using FinanceManagement.Domain.Entities;
 using FinanceManagement.Domain.Enums;
 using FinanceManagement.Infrastructure.Data;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
 namespace FinanceManagement.Infrastructure.Services;
@@ -66,34 +68,32 @@ public class FinancialService : IFinancialService
 
     public async Task<IEnumerable<PartnerIncomeDto>> CalculatePartnerIncomesAsync(int month, int year)
     {
-        var partners = await _partnerRepository.GetMainPartnersAsync();
-        var partnerIncomes = new List<PartnerIncomeDto>();
+            var partners = await _partnerRepository.GetMainPartnersAsync();
+            var partnerIncomes = new List<PartnerIncomeDto>();
 
-        foreach (var partner in partners)
-        {
-
-            var actualIncome = await _financialRepository.GetPartnerIncomeAsync(partner.Id, month, year);
-            var expectedIncome = 200000m;
-            var settlementAmount = actualIncome - expectedIncome;
-
-            var projectsCount = await _context.Projects
-                .CountAsync(p => p.ManagedByPartnerId == partner.Id);
-
-            var partnerName = partner.User?.FirstName + " " + partner.User?.LastName;  
-
-       
-            partnerIncomes.Add(new PartnerIncomeDto
+            foreach (var partner in partners)
             {
-                PartnerId = partner.Id,
-                PartnerName = partnerName,
-                ExpectedIncome = expectedIncome,
-                ActualIncome = actualIncome,
-                SettlementAmount = settlementAmount,
-                ProjectsManaged = projectsCount
-            });
-        }
+                var actualIncome = await _financialRepository.GetPartnerIncomeAsync(partner.Id, month, year);
+                var expectedIncome = 200000m;
+                var settlementAmount = actualIncome - expectedIncome;
 
-        return partnerIncomes;
+                var projectsCount = await _context.Projects
+                    .CountAsync(p => p.ManagedByPartnerId == partner.Id);
+            partner.User = null;
+            var partnerName = partner.User != null ? $"{partner.User.FirstName} {partner.User.LastName}" : "unknown partner";
+
+            partnerIncomes.Add(new PartnerIncomeDto
+                {
+                    PartnerId = partner.Id,
+                    PartnerName = partnerName,
+                    ExpectedIncome = expectedIncome,
+                    ActualIncome = actualIncome,
+                    SettlementAmount = settlementAmount,
+                    ProjectsManaged = projectsCount
+                });
+            }
+
+           return partnerIncomes;
     }
 
     public async Task ProcessSettlementsAsync(int month, int year)
@@ -134,7 +134,3 @@ public class FinancialService : IFinancialService
         return Math.Round(settlement, 2);
     }
 }
-
-//        var partnerName = partner.User != null
-//? $"{partner.User.FirstName} {partner.User.LastName}"
-//: "Unknown Partner";
