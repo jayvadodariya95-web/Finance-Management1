@@ -39,7 +39,13 @@ public class ProjectsController : ControllerBase
             var projectDtos = new List<ProjectDto>();
             
             foreach (var project in projects)
+            var projectDtos = new List<ProjectDto>();
+            
+            foreach (var project in projects)
             {
+                var partner = await _partnerRepository.GetByIdAsync(project.ManagedByPartnerId);
+                
+                var projectDto = new ProjectDto
                 var partner = await _partnerRepository.GetByIdAsync(project.ManagedByPartnerId);
                 
                 var projectDto = new ProjectDto
@@ -66,6 +72,7 @@ public class ProjectsController : ControllerBase
         {
             _logger.LogError(ex, "Error retrieving projects");
             return StatusCode(500, ApiResponse<IEnumerable<ProjectDto>>.ErrorResult("Failed to retrieve projects"));
+            return StatusCode(500, ApiResponse<IEnumerable<ProjectDto>>.ErrorResult("Failed to retrieve projects"));
         }
     }
 
@@ -83,6 +90,9 @@ public class ProjectsController : ControllerBase
             
             var partner = await _partnerRepository.GetByIdAsync(project.ManagedByPartnerId);
             
+            
+            var partner = await _partnerRepository.GetByIdAsync(project.ManagedByPartnerId);
+            
             var projectDto = new ProjectDto
             {
                 Id = project.Id,
@@ -92,6 +102,7 @@ public class ProjectsController : ControllerBase
                 StartDate = project.StartDate,
                 EndDate = project.EndDate,
                 Status = project.Status.ToString(),
+                ManagedByPartner = $"{partner.User.FirstName} {partner.User.LastName}"
                 ManagedByPartner = $"{partner.User.FirstName} {partner.User.LastName}"
             };
 
@@ -103,6 +114,7 @@ public class ProjectsController : ControllerBase
             return StatusCode(500, ApiResponse<ProjectDto>.ErrorResult("Failed to retrieve project"));
         }
     }
+
 
     [HttpPost]
     public async Task<ActionResult<ApiResponse<ProjectDto>>> CreateProject([FromBody] CreateProjectDto request)
@@ -124,6 +136,8 @@ public class ProjectsController : ControllerBase
             var createdProject = await _projectRepository.CreateAsync(project);
             var partner = await _partnerRepository.GetByIdAsync(createdProject.ManagedByPartnerId);
             
+            var partner = await _partnerRepository.GetByIdAsync(createdProject.ManagedByPartnerId);
+            
             var projectDto = new ProjectDto
             {
                 Id = createdProject.Id,
@@ -133,6 +147,7 @@ public class ProjectsController : ControllerBase
                 StartDate = createdProject.StartDate,
                 EndDate = createdProject.EndDate,
                 Status = createdProject.Status.ToString(),
+                ManagedByPartner = $"{partner.User.FirstName} {partner.User.LastName}"
                 ManagedByPartner = $"{partner.User.FirstName} {partner.User.LastName}"
             };
 
