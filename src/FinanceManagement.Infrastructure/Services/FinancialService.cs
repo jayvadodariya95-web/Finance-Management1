@@ -1,4 +1,4 @@
-﻿using FinanceManagement.Application.DTOs;
+using FinanceManagement.Application.DTOs;
 using FinanceManagement.Application.Interfaces;
 using FinanceManagement.Domain.Entities;
 using FinanceManagement.Domain.Enums;
@@ -75,14 +75,11 @@ public class FinancialService : IFinancialService
             var expectedIncome = 200000m;
             var settlementAmount = actualIncome - expectedIncome;
 
-           var projectsCount = await _context.Projects
-               .CountAsync(p => p.ManagedByPartnerId == partner.Id);
-            partner.User = null;
-            //var partnerName = partner.User.FirstName + " " + partner.User.LastName;
+            var projectsCount = await _context.Projects
+                .CountAsync(p => p.ManagedByPartnerId == partner.Id);
 
-            // Bug: 002 null reference exception when partner.User is null, added null check        
-            var partnerName = partner.User != null ? $"{partner.User.FirstName} {partner.User.LastName}" : "Not Found";
-          
+            var partnerName = partner.User?.FirstName + " " + partner.User?.LastName;
+
             partnerIncomes.Add(new PartnerIncomeDto
             {
                 PartnerId = partner.Id,
@@ -104,7 +101,7 @@ public class FinancialService : IFinancialService
         foreach (var partner in partners)
         {
             var settlementAmount = await CalculatePartnerSettlementAsync(partner.Id, month, year);
-
+            
             var settlement = new Settlement
             {
                 PartnerId = partner.Id,
@@ -122,14 +119,16 @@ public class FinancialService : IFinancialService
 
         await _context.SaveChangesAsync();
     }
+
     public async Task<decimal> CalculatePartnerSettlementAsync(int partnerId, int month, int year)
     {
         var partner = await _partnerRepository.GetByIdAsync(partnerId);
         if (partner == null) return 0;
+
         var actualIncome = await _financialRepository.GetPartnerIncomeAsync(partnerId, month, year);
         var expectedIncome = 200000m;
         var settlement = actualIncome - expectedIncome;
-
+        
         return Math.Round(settlement, 2);
     }
 }
