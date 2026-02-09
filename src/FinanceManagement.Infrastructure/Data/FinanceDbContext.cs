@@ -10,11 +10,11 @@ public class FinanceDbContext : DbContext
     }
 
     public DbSet<User> Users { get; set; }
-    public DbSet<Partner> Partners { get; set; }
+    public DbSet<Partner> Partners { get; set; } 
     public DbSet<Branch> Branches { get; set; }
     public DbSet<Employee> Employees { get; set; }
     public DbSet<Project> Projects { get; set; }
-    public DbSet<ProjectEmployee> ProjectEmployees { get; set; }
+    public DbSet<ProjectEmployee> ProjectEmployees { get; set; } 
     public DbSet<BankAccount> BankAccounts { get; set; }
     public DbSet<BankTransaction> BankTransactions { get; set; }
     public DbSet<MonthlyExpense> MonthlyExpenses { get; set; }

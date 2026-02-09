@@ -10,7 +10,7 @@ namespace FinanceManagement.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
+//[Authorize]
 public class ProjectsController : ControllerBase
 {
     private readonly IProjectRepository _projectRepository;
@@ -41,9 +41,10 @@ public class ProjectsController : ControllerBase
             foreach (var project in projects)
             {
                 var partner = await _partnerRepository.GetByIdAsync(project.ManagedByPartnerId);
-                
+
                 var projectDto = new ProjectDto
                 {
+                    
                     Id = project.Id,
                     Name = project.Name,
                     ClientName = project.ClientName,
@@ -51,7 +52,11 @@ public class ProjectsController : ControllerBase
                     StartDate = project.StartDate,
                     EndDate = project.EndDate,
                     Status = project.Status.ToString(),
-                    ManagedByPartner = $"{partner.User.FirstName} {partner.User.LastName}"
+                    //Bug: ManagedBypartner null 
+                    ManagedByPartner = project.ManagedByPartner?.User != null ? $"{project.ManagedByPartner.User?.FirstName??"Unkonw"} {project.ManagedByPartner.User?.LastName}" : "Unknown"
+
+
+                   // ManagedByPartner = $"{partner.User.FirstName} {partner.User.LastName}"
                 };
                 
                 projectDtos.Add(projectDto);
@@ -130,6 +135,7 @@ public class ProjectsController : ControllerBase
                 StartDate = createdProject.StartDate,
                 EndDate = createdProject.EndDate,
                 Status = createdProject.Status.ToString(),
+               
                 ManagedByPartner = $"{partner.User.FirstName} {partner.User.LastName}"
             };
 
