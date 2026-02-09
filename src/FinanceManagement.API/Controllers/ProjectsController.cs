@@ -42,6 +42,7 @@ public class ProjectsController : ControllerBase
             foreach (var project in projects)
             {
                 var partner = await _partnerRepository.GetByIdAsync(project.ManagedByPartnerId);
+                
 
                 var projectDto = new ProjectDto
                 {
@@ -52,7 +53,7 @@ public class ProjectsController : ControllerBase
                     StartDate = project.StartDate,
                     EndDate = project.EndDate,
                     Status = project.Status.ToString(),
-                    ManagedByPartner = $"{partner?.User?.FirstName ?? "Firstname is Empty"} {partner?.User?.LastName ?? "Lastname is Empty"}"
+                    ManagedByPartner = partner != null ? $"{partner?.User?.FirstName ?? "Empty"} {partner?.User?.LastName ?? "Empty"}" : "Name is empty",
                 };
                 
                 projectDtos.Add(projectDto);
