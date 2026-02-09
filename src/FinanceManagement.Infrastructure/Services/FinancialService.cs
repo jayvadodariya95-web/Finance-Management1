@@ -1,4 +1,4 @@
-using FinanceManagement.Application.DTOs;
+﻿using FinanceManagement.Application.DTOs;
 using FinanceManagement.Application.Interfaces;
 using FinanceManagement.Domain.Entities;
 using FinanceManagement.Domain.Enums;
@@ -69,7 +69,7 @@ public class FinancialService : IFinancialService
         var partners = await _partnerRepository.GetMainPartnersAsync();
         var partnerIncomes = new List<PartnerIncomeDto>();
 
-        foreach (var partner in partners)
+        foreach (var partner in partners)     
         {
             var actualIncome = await _financialRepository.GetPartnerIncomeAsync(partner.Id, month, year);
             var expectedIncome = 200000m;
@@ -78,7 +78,7 @@ public class FinancialService : IFinancialService
             var projectsCount = await _context.Projects
                 .CountAsync(p => p.ManagedByPartnerId == partner.Id);
 
-            var partnerName = partner.User?.FirstName + " " + partner.User?.LastName;
+            var partnerName = (partner.User?.FirstName!=null? partner.User?.FirstName:"Sorry First name is not found") + " " + (partner.User?.LastName!=null? partner.User?.LastName:"Sorry Last name is not found");
 
             partnerIncomes.Add(new PartnerIncomeDto
             {
@@ -101,7 +101,7 @@ public class FinancialService : IFinancialService
         foreach (var partner in partners)
         {
             var settlementAmount = await CalculatePartnerSettlementAsync(partner.Id, month, year);
-            
+
             var settlement = new Settlement
             {
                 PartnerId = partner.Id,
@@ -128,7 +128,7 @@ public class FinancialService : IFinancialService
         var actualIncome = await _financialRepository.GetPartnerIncomeAsync(partnerId, month, year);
         var expectedIncome = 200000m;
         var settlement = actualIncome - expectedIncome;
-        
+
         return Math.Round(settlement, 2);
     }
 }
