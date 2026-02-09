@@ -45,7 +45,7 @@ public class ProjectsController : ControllerBase
                 var projectDto = new ProjectDto
                 {
                     
-                    Id = project.Id,
+                    Id = project.Id,  
                     Name = project.Name,
                     ClientName = project.ClientName,
                     ProjectValue = project.ProjectValue,
