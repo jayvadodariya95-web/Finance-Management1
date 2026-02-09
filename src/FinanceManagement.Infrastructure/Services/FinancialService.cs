@@ -77,8 +77,8 @@ public class FinancialService : IFinancialService
 
             var projectsCount = await _context.Projects
                 .CountAsync(p => p.ManagedByPartnerId == partner.Id);
-
-            var partnerName = partner.User?.FirstName + " " + partner.User?.LastName;
+            partner.User = null;
+            var partnerName = partner.User != null ? $"{partner.User.FirstName} {partner.User.LastName}" : "Unkonw Partner";
 
             partnerIncomes.Add(new PartnerIncomeDto
             {
@@ -101,7 +101,7 @@ public class FinancialService : IFinancialService
         foreach (var partner in partners)
         {
             var settlementAmount = await CalculatePartnerSettlementAsync(partner.Id, month, year);
-            
+
             var settlement = new Settlement
             {
                 PartnerId = partner.Id,
@@ -128,7 +128,7 @@ public class FinancialService : IFinancialService
         var actualIncome = await _financialRepository.GetPartnerIncomeAsync(partnerId, month, year);
         var expectedIncome = 200000m;
         var settlement = actualIncome - expectedIncome;
-        
+
         return Math.Round(settlement, 2);
     }
 }
