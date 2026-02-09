@@ -10,7 +10,7 @@ namespace FinanceManagement.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
+//[Authorize]
 public class ProjectsController : ControllerBase
 {
     private readonly IProjectRepository _projectRepository;
@@ -51,7 +51,8 @@ public class ProjectsController : ControllerBase
                     StartDate = project.StartDate,
                     EndDate = project.EndDate,
                     Status = project.Status.ToString(),
-                    ManagedByPartner = $"{partner.User.FirstName} {partner.User.LastName}"
+                    // ManagedByPartner = $"{partner?.User?.FirstName ?? "Unkonw Partner"} {partner?.User?.LastName}"
+                    ManagedByPartner= partner != null ? $"{partner.User.FirstName} {partner.User.LastName}" : "Unkonw Partner"
                 };
                 
                 projectDtos.Add(projectDto);
