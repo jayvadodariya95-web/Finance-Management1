@@ -12,7 +12,7 @@ public class Project : BaseEntity
     public DateTime StartDate { get; set; }
     public DateTime? EndDate { get; set; }
     public ProjectStatus Status { get; set; }
-    public int ManagedByPartnerId { get; set; }
+    public int ManagedByPartnerId { get; set; } // Forieng Key
     
     // Navigation properties
     public Partner ManagedByPartner { get; set; } = null!;

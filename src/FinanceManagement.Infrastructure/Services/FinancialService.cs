@@ -3,6 +3,7 @@ using FinanceManagement.Application.Interfaces;
 using FinanceManagement.Domain.Entities;
 using FinanceManagement.Domain.Enums;
 using FinanceManagement.Infrastructure.Data;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
 namespace FinanceManagement.Infrastructure.Services;
@@ -78,7 +79,7 @@ public class FinancialService : IFinancialService
             var projectsCount = await _context.Projects
                 .CountAsync(p => p.ManagedByPartnerId == partner.Id);
 
-            var partnerName = partner.User?.FirstName + " " + partner.User?.LastName;
+            var partnerName = (partner.User?.FirstName ?? "Null") + " " + (partner.User?.LastName ?? "Null");
 
             partnerIncomes.Add(new PartnerIncomeDto
             {

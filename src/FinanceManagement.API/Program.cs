@@ -8,6 +8,8 @@ using FinanceManagement.Application.Interfaces;
 using FinanceManagement.Infrastructure.Repositories;
 using FinanceManagement.Infrastructure.Services;
 using FinanceManagement.API.Middleware;
+using FinanceManagement.Domain.Enums;
+using FinanceManagement.Domain.Entities;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -87,7 +89,7 @@ app.MapControllers();
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<FinanceDbContext>();
-    await context.Database.MigrateAsync();
+    //await context.Database.MigrateAsync();
     await SeedData(context);
 }
 
@@ -122,4 +124,5 @@ static async Task SeedData(FinanceDbContext context)
         context.Users.AddRange(users);
         await context.SaveChangesAsync();
     }
+
 }
