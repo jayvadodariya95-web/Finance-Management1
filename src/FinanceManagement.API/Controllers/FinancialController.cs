@@ -8,7 +8,7 @@ namespace FinanceManagement.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
+//[Authorize]
 public class FinancialController : ControllerBase
 {
     private readonly IFinancialService _financialService;
