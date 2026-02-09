@@ -80,6 +80,7 @@ public class PartnerRepository : IPartnerRepository
 
     public async Task<Partner?> GetByIdAsync(int id)
     {
+       // id = 99;
         return await _context.Partners
             .Include(p => p.User)
             .FirstOrDefaultAsync(p => p.Id == id);

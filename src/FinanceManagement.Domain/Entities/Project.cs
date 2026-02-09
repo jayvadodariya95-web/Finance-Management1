@@ -13,7 +13,7 @@ public class Project : BaseEntity
     public DateTime? EndDate { get; set; }
     public ProjectStatus Status { get; set; }
     public int ManagedByPartnerId { get; set; }
-    
+
     // Navigation properties
     public Partner ManagedByPartner { get; set; } = null!;
     public ICollection<ProjectEmployee> ProjectEmployees { get; set; } = new List<ProjectEmployee>();
