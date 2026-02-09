@@ -95,7 +95,7 @@ public class PartnerRepository : IPartnerRepository
     public async Task<IEnumerable<Partner>> GetMainPartnersAsync()
     {
         return await _context.Partners
-            .Include(p => p.User)
+            //.Include(p => p.User.Partner)
             .Where(p => p.IsMainPartner)
             .ToListAsync();
     }

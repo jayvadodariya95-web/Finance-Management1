@@ -68,6 +68,7 @@ public class FinancialService : IFinancialService
     public async Task<IEnumerable<PartnerIncomeDto>> CalculatePartnerIncomesAsync(int month, int year)
     {
         var partners = await _partnerRepository.GetMainPartnersAsync();
+        
         var partnerIncomes = new List<PartnerIncomeDto>();
 
         foreach (var partner in partners)
@@ -79,7 +80,10 @@ public class FinancialService : IFinancialService
             var projectsCount = await _context.Projects
                 .CountAsync(p => p.ManagedByPartnerId == partner.Id);
 
-            var partnerName = (partner.User?.FirstName ?? "Null") + " " + (partner.User?.LastName ?? "Null");
+            var fullName = $"{partner.User?.FirstName} {partner.User?.LastName}";
+
+            var partnerName = string.IsNullOrWhiteSpace(fullName) ? "N/A" : fullName;
+            //var partnerName = partner != null ? (partner.User?.FirstName) + (partner.User?.LastName) : "N/A";
 
             partnerIncomes.Add(new PartnerIncomeDto
             {
@@ -102,7 +106,7 @@ public class FinancialService : IFinancialService
         foreach (var partner in partners)
         {
             var settlementAmount = await CalculatePartnerSettlementAsync(partner.Id, month, year);
-            
+
             var settlement = new Settlement
             {
                 PartnerId = partner.Id,
@@ -129,7 +133,7 @@ public class FinancialService : IFinancialService
         var actualIncome = await _financialRepository.GetPartnerIncomeAsync(partnerId, month, year);
         var expectedIncome = 200000m;
         var settlement = actualIncome - expectedIncome;
-        
+
         return Math.Round(settlement, 2);
     }
 }
