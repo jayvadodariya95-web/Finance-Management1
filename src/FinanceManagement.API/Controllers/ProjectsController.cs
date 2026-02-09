@@ -51,7 +51,7 @@ public class ProjectsController : ControllerBase
                     StartDate = project.StartDate,
                     EndDate = project.EndDate,
                     Status = project.Status.ToString(),
-                    ManagedByPartner = $"{partner.User.FirstName} {partner.User.LastName}"
+                    ManagedByPartner = partner != null ? $"{partner.User.FirstName} {partner.User.LastName}" : "Unkonw Partner"
                 };
                 
                 projectDtos.Add(projectDto);
