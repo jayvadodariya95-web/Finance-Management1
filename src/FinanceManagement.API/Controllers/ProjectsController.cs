@@ -52,7 +52,7 @@ public class ProjectsController : ControllerBase
                     EndDate = project.EndDate,
                     Status = project.Status.ToString(),
                
-                  ManagedByPartner = partner!=null? $"{partner.User.FirstName} {partner.User.LastName}" : "Unassigned Partner"
+                  ManagedByPartner = partner!=null? $"{partner.User.FirstName} {partner.User.LastName}" : "Unassigned Partner"  
                    // ManagedByPartner = $"{partner?.User?.FirstName} {partner?.User?.LastName}"
 
                 };
