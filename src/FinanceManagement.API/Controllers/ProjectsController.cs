@@ -41,7 +41,7 @@ public class ProjectsController : ControllerBase
             foreach (var project in projects)
             {   // Exception Handled if user throw invalid ID
                 var partner = await _partnerRepository.GetByIdAsync(project.ManagedByPartnerId);
-                
+                var fullName = $"{partner?.User?.FirstName} {partner?.User?.LastName}";
                 var projectDto = new ProjectDto
                 {
                     Id = project.Id,
@@ -51,7 +51,7 @@ public class ProjectsController : ControllerBase
                     StartDate = project.StartDate,
                     EndDate = project.EndDate,
                     Status = project.Status.ToString(),
-                    ManagedByPartner = $"{partner?.User?.FirstName ?? "N/A"} {partner?.User?.LastName ?? "N/A"}"
+                    ManagedByPartner = string.IsNullOrEmpty(fullName) ? "N.A" : fullName
                 };
                 
                 projectDtos.Add(projectDto);
@@ -89,7 +89,7 @@ public class ProjectsController : ControllerBase
                 StartDate = project.StartDate,
                 EndDate = project.EndDate,
                 Status = project.Status.ToString(),
-                ManagedByPartner = $"{partner.User.FirstName} {partner.User.LastName}"
+                ManagedByPartner = $"{partner?.User?.FirstName} {partner?.User?.LastName}"
             };
 
             return Ok(ApiResponse<ProjectDto>.SuccessResult(projectDto));
