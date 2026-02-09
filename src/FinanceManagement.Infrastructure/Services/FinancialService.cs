@@ -78,7 +78,8 @@ public class FinancialService : IFinancialService
             var projectsCount = await _context.Projects
                 .CountAsync(p => p.ManagedByPartnerId == partner.Id);
 
-            var partnerName = partner.User?.FirstName + " " + partner.User?.LastName;
+            var fullName = partner.User?.FirstName + " " + partner.User?.LastName;
+            var partnerName = string.IsNullOrWhiteSpace(fullName) ? "N/A" : fullName;
 
             partnerIncomes.Add(new PartnerIncomeDto
             {
