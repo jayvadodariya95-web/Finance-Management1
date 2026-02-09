@@ -77,8 +77,10 @@ public class FinancialService : IFinancialService
 
             var projectsCount = await _context.Projects
                 .CountAsync(p => p.ManagedByPartnerId == partner.Id);
-
-            var partnerName = partner.User?.FirstName + " " + partner.User?.LastName;
+            // bug 002: partner.User null
+          
+           var partnerName = partner.User != null ? $"{partner.User?.FirstName??"Unknow partner"} {partner.User?.LastName}" : "Unknown Partner";
+           //var partnerName = partner.User?.FirstName + " " + partner.User?.LastName;
 
             partnerIncomes.Add(new PartnerIncomeDto
             {
@@ -126,6 +128,8 @@ public class FinancialService : IFinancialService
     {
         var partner = await _partnerRepository.GetByIdAsync(partnerId);
         if (partner == null) return 0;
+
+        if (partner.SharePercentage == 0) return 0; // bug 003: partner with 0% share should not have settlement
 
         var actualIncome = await _financialRepository.GetPartnerIncomeAsync(partnerId, month, year);
         var expectedIncome = 200000m;
