@@ -33,26 +33,27 @@ public class FinancialService : IFinancialService
 
         var partnerIncomes = await CalculatePartnerIncomesAsync(month, year);
         var expenses = await _financialRepository.GetMonthlyExpensesAsync(month, year);
-
-        return new MonthlyReportDto
-        {
-            Month = month,
-            Year = year,
-            TotalIncome = totalIncome,
-            TotalExpenses = totalExpenses,
-            TotalSalaries = totalSalaries,
-            NetIncome = netIncome,
-            PartnerIncomes = partnerIncomes.ToList(),
-            Expenses = expenses.Select(e => new ExpenseDto
+        
+        
+            return new MonthlyReportDto
             {
-                Id = e.Id,
-                Description = e.Description,
-                Amount = e.Amount,
-                Category = e.Category.ToString(),
-                Date = new DateTime(e.Year, e.Month, 1),
-                IsApproved = !string.IsNullOrEmpty(e.ApprovedBy)
-            }).ToList()
-        };
+                Month = month,
+                Year = year,
+                TotalIncome = totalIncome,
+                TotalExpenses = totalExpenses,
+                TotalSalaries = totalSalaries,
+                NetIncome = netIncome,
+                PartnerIncomes = partnerIncomes.ToList(),
+                Expenses = expenses.Select(e => new ExpenseDto
+                {
+                    Id = e.Id,
+                    Description = e.Description,
+                    Amount = e.Amount,
+                    Category = e.Category.ToString(),
+                    Date = new DateTime(e.Year, e.Month,28),
+                    IsApproved = !string.IsNullOrEmpty(e.ApprovedBy)
+                }).ToList()
+            };
     }
 
     public async Task<decimal> CalculateNetIncomeAsync(int month, int year)
@@ -131,15 +132,13 @@ public class FinancialService : IFinancialService
 
     public async Task<decimal> CalculatePartnerSettlementAsync(int partnerId, int month, int year)
     {
-        var partner = await _partnerRepository.GetByIdAsync(partnerId);
-        if (partner == null) return 0;
-
-       
+       var partner = await _partnerRepository.GetByIdAsync(partnerId);
+       if (partner == null) return 0;
+       if(partner.SharePercentage <= 0) return 0;
 
         var actualIncome = await _financialRepository.GetPartnerIncomeAsync(partnerId, month, year);
         var expectedIncome = 200000m;
         var settlement = actualIncome - expectedIncome;
-
         return Math.Round(settlement, 2);
     }
 }

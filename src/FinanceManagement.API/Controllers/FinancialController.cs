@@ -32,13 +32,17 @@ public class FinancialController : ControllerBase
         {
             // BUG: No role authorization - any authenticated user can view financial reports
             // BUG: No validation for month/year parameters
-            
-            if (month < 1 || month > 12)
-            {
-                return BadRequest(ApiResponse<MonthlyReportDto>.ErrorResult("Invalid month"));
-            }
 
-            var report = await _financialService.GenerateMonthlyReportAsync(month, year);
+           if (year < 2000 || year > DateTime.Now.Year || month < 1 || month > 12)
+           {
+                throw new ArgumentException("Invalid month or year");
+           }
+           else if (year == DateTime.Now.Year && month > DateTime.Now.Month)
+           {
+               throw new ArgumentException("Cannot generate report for future month");
+           }       
+
+                var report = await _financialService.GenerateMonthlyReportAsync(month, year);
             
             return Ok(ApiResponse<MonthlyReportDto>.SuccessResult(report));
         }
@@ -85,6 +89,7 @@ public class FinancialController : ControllerBase
             
             return Ok(ApiResponse<string>.SuccessResult("Settlements processed successfully"));
         }
+        
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error processing settlements for {Month}/{Year}", month, year);
@@ -126,6 +131,7 @@ public class FinancialController : ControllerBase
 
             return Ok(ApiResponse<IEnumerable<BankTransactionDto>>.SuccessResult(transactionDtos));
         }
+        
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving transactions");
