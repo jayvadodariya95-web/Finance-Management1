@@ -32,15 +32,19 @@ public class FinancialController : ControllerBase
         {
             // BUG: No role authorization - any authenticated user can view financial reports
             // BUG: No validation for month/year parameters
-            
-            if (month < 1 || month > 12)
+
+            if (year > DateTime.UtcNow.Year || (year == DateTime.UtcNow.Year && month > DateTime.UtcNow.Month))
             {
-                return BadRequest(ApiResponse<MonthlyReportDto>.ErrorResult("Invalid month"));
+                return BadRequest("Invalid Month or Year");
             }
 
             var report = await _financialService.GenerateMonthlyReportAsync(month, year);
-            
+
             return Ok(ApiResponse<MonthlyReportDto>.SuccessResult(report));
+        }
+        catch (ArgumentOutOfRangeException ex)
+        {
+            return StatusCode(500, ex.Message);
         }
         catch (Exception ex)
         {
@@ -55,10 +59,10 @@ public class FinancialController : ControllerBase
         try
         {
             // BUG: No authorization check - any user can view any partner's income
-            
+
             var partnerIncomes = await _financialService.CalculatePartnerIncomesAsync(month, year);
             var partnerIncome = partnerIncomes.FirstOrDefault(p => p.PartnerId == partnerId);
-            
+
             if (partnerIncome == null)
             {
                 return NotFound(ApiResponse<decimal>.ErrorResult("Partner income not found"));
@@ -80,9 +84,9 @@ public class FinancialController : ControllerBase
         {
             // BUG: No role authorization - any authenticated user can process settlements
             // BUG: No validation to prevent duplicate processing
-            
+
             await _financialService.ProcessSettlementsAsync(month, year);
-            
+
             return Ok(ApiResponse<string>.SuccessResult("Settlements processed successfully"));
         }
         catch (Exception ex)
@@ -94,13 +98,13 @@ public class FinancialController : ControllerBase
 
     [HttpGet("transactions")]
     public async Task<ActionResult<ApiResponse<IEnumerable<BankTransactionDto>>>> GetTransactions(
-        [FromQuery] DateTime? startDate, 
+        [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate)
     {
         try
         {
             IEnumerable<FinanceManagement.Domain.Entities.BankTransaction> transactions;
-            
+
             if (startDate.HasValue && endDate.HasValue)
             {
                 // PERFORMANCE ISSUE: No pagination for potentially large datasets
@@ -141,7 +145,7 @@ public class FinancialController : ControllerBase
             // BUG: No validation for required fields
             // BUG: No authorization check
             // BUG: No validation for reasonable amounts
-            
+
             var transaction = new FinanceManagement.Domain.Entities.BankTransaction
             {
                 BankAccountId = request.BankAccountId,
@@ -154,7 +158,7 @@ public class FinancialController : ControllerBase
             };
 
             var createdTransaction = await _transactionRepository.CreateAsync(transaction);
-            
+
             var transactionDto = new BankTransactionDto
             {
                 Id = createdTransaction.Id,
@@ -165,7 +169,7 @@ public class FinancialController : ControllerBase
                 IsProcessed = createdTransaction.IsProcessed
             };
 
-            return CreatedAtAction(nameof(GetTransactions), 
+            return CreatedAtAction(nameof(GetTransactions),
                 ApiResponse<BankTransactionDto>.SuccessResult(transactionDto, "Transaction created successfully"));
         }
         catch (Exception ex)
@@ -182,7 +186,7 @@ public class FinancialController : ControllerBase
         {
             // BUG: Calculation includes bugs from FinancialService
             var netIncome = await _financialService.CalculateNetIncomeAsync(month, year);
-            
+
             return Ok(ApiResponse<decimal>.SuccessResult(netIncome));
         }
         catch (Exception ex)
