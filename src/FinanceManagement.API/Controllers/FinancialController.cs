@@ -3,12 +3,13 @@ using Microsoft.AspNetCore.Authorization;
 using FinanceManagement.Application.Common;
 using FinanceManagement.Application.Interfaces;
 using FinanceManagement.Application.DTOs;
+using Microsoft.VisualBasic;
 
 namespace FinanceManagement.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-//[Authorize]
+[Authorize]
 public class FinancialController : ControllerBase
 {
     private readonly IFinancialService _financialService;
@@ -32,15 +33,25 @@ public class FinancialController : ControllerBase
         {
             // BUG: No role authorization - any authenticated user can view financial reports
             // BUG: No validation for month/year parameters
-            
+    
             if (month < 1 || month > 12)
             {
                 return BadRequest(ApiResponse<MonthlyReportDto>.ErrorResult("Invalid month"));
             }
 
+            var CurrentYear = DateTime.UtcNow.Year;
+            if(year < 2000 || year > CurrentYear)
+            {
+                return BadRequest(ApiResponse<MonthlyReportDto>.ErrorResult("Inavalid Year"));
+            }
+            
             var report = await _financialService.GenerateMonthlyReportAsync(month, year);
             
             return Ok(ApiResponse<MonthlyReportDto>.SuccessResult(report));
+        }
+        catch(ArgumentOutOfRangeException ex)
+        {
+            return BadRequest("Invalid date 'FEBRUARY 30");
         }
         catch (Exception ex)
         {
@@ -84,7 +95,7 @@ public class FinancialController : ControllerBase
             await _financialService.ProcessSettlementsAsync(month, year);
             
             return Ok(ApiResponse<string>.SuccessResult("Settlements processed successfully"));
-        }
+        }      
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error processing settlements for {Month}/{Year}", month, year);
