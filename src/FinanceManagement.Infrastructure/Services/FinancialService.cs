@@ -34,25 +34,33 @@ public class FinancialService : IFinancialService
         var partnerIncomes = await CalculatePartnerIncomesAsync(month, year);
         var expenses = await _financialRepository.GetMonthlyExpensesAsync(month, year);
 
-        return new MonthlyReportDto
+        try
         {
-            Month = month,
-            Year = year,
-            TotalIncome = totalIncome,
-            TotalExpenses = totalExpenses,
-            TotalSalaries = totalSalaries,
-            NetIncome = netIncome,
-            PartnerIncomes = partnerIncomes.ToList(),
-            Expenses = expenses.Select(e => new ExpenseDto
+            MonthlyReportDto monthlyExpenseCalculator = new MonthlyReportDto
             {
-                Id = e.Id,
-                Description = e.Description,
-                Amount = e.Amount,
-                Category = e.Category.ToString(),
-                Date = new DateTime(e.Year, e.Month, 1),
-                IsApproved = !string.IsNullOrEmpty(e.ApprovedBy)
-            }).ToList()
-        };
+                Month = month,
+                Year = year,
+                TotalIncome = totalIncome,
+                TotalExpenses = totalExpenses,
+                TotalSalaries = totalSalaries,
+                NetIncome = netIncome,
+                PartnerIncomes = partnerIncomes.ToList(),
+                Expenses = expenses.Select(e => new ExpenseDto
+                {
+                    Id = e.Id,
+                    Description = e.Description,
+                    Amount = e.Amount,
+                    Category = e.Category.ToString(),
+                    Date = new DateTime(e.Year, e.Month,30),
+                    IsApproved = !string.IsNullOrEmpty(e.ApprovedBy)
+                }).ToList()
+            };
+            return monthlyExpenseCalculator;
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            throw new ArgumentOutOfRangeException();
+        }
     }
 
     public async Task<decimal> CalculateNetIncomeAsync(int month, int year)

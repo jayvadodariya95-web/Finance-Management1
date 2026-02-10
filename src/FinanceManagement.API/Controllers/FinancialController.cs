@@ -9,6 +9,7 @@ namespace FinanceManagement.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 //[Authorize]
+[Authorize]
 public class FinancialController : ControllerBase
 {
     private readonly IFinancialService _financialService;
@@ -34,13 +35,18 @@ public class FinancialController : ControllerBase
             // BUG: No validation for month/year parameters
             
             if (month < 1 || month > 12)
+            if (year > DateTime.Now.Year || (year == DateTime.Now.Year & month > DateTime.Now.Month))
             {
-                return BadRequest(ApiResponse<MonthlyReportDto>.ErrorResult("Invalid month"));
+                return BadRequest(ApiResponse<MonthlyReportDto>.ErrorResult("Invalid month or year"));
             }
 
             var report = await _financialService.GenerateMonthlyReportAsync(month, year);
             
             return Ok(ApiResponse<MonthlyReportDto>.SuccessResult(report));
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            return BadRequest(ApiResponse<MonthlyReportDto>.ErrorResult("Invalid date"));
         }
         catch (Exception ex)
         {
