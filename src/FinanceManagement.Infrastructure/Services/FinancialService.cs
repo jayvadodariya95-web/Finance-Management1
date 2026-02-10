@@ -3,7 +3,9 @@ using FinanceManagement.Application.Interfaces;
 using FinanceManagement.Domain.Entities;
 using FinanceManagement.Domain.Enums;
 using FinanceManagement.Infrastructure.Data;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 
 namespace FinanceManagement.Infrastructure.Services;
 
@@ -25,34 +27,42 @@ public class FinancialService : IFinancialService
 
     public async Task<MonthlyReportDto> GenerateMonthlyReportAsync(int month, int year)
     {
-        var totalIncome = _financialRepository.GetTotalIncomeAsync(month, year).Result;
-        var totalExpenses = _financialRepository.GetTotalExpensesAsync(month, year).Result;
-        var totalSalaries = _financialRepository.GetTotalSalariesAsync(month, year).Result;
-
-        var netIncome = totalIncome - totalExpenses - totalSalaries;
-
-        var partnerIncomes = await CalculatePartnerIncomesAsync(month, year);
-        var expenses = await _financialRepository.GetMonthlyExpensesAsync(month, year);
-
-        return new MonthlyReportDto
+        try
         {
-            Month = month,
-            Year = year,
-            TotalIncome = totalIncome,
-            TotalExpenses = totalExpenses,
-            TotalSalaries = totalSalaries,
-            NetIncome = netIncome,
-            PartnerIncomes = partnerIncomes.ToList(),
-            Expenses = expenses.Select(e => new ExpenseDto
+            var totalIncome = _financialRepository.GetTotalIncomeAsync(month, year).Result;
+            var totalExpenses = _financialRepository.GetTotalExpensesAsync(month, year).Result;
+            var totalSalaries = _financialRepository.GetTotalSalariesAsync(month, year).Result;
+
+            var netIncome = totalIncome - totalExpenses - totalSalaries;
+
+            var partnerIncomes = await CalculatePartnerIncomesAsync(month, year);
+            var expenses = await _financialRepository.GetMonthlyExpensesAsync(month, year);
+
+            MonthlyReportDto md = new MonthlyReportDto
             {
-                Id = e.Id,
-                Description = e.Description,
-                Amount = e.Amount,
-                Category = e.Category.ToString(),
-                Date = new DateTime(e.Year, e.Month, 1),
-                IsApproved = !string.IsNullOrEmpty(e.ApprovedBy)
-            }).ToList()
-        };
+                Month = month,
+                Year = year,
+                TotalIncome = totalIncome,
+                TotalExpenses = totalExpenses,
+                TotalSalaries = totalSalaries,
+                NetIncome = netIncome,
+                PartnerIncomes = partnerIncomes.ToList(),
+                Expenses = expenses.Select(e => new ExpenseDto
+                {
+                    Id = e.Id,
+                    Description = e.Description,
+                    Amount = e.Amount,
+                    Category = e.Category.ToString(),
+                    Date = new DateTime(e.Year, e.Month, 1),
+                    IsApproved = !string.IsNullOrEmpty(e.ApprovedBy)
+                }).ToList()
+            };
+            return md;
+        }
+        catch (ArgumentOutOfRangeException ex)
+        {
+            throw new ArgumentOutOfRangeException("Invalid date");
+        }
     }
 
     public async Task<decimal> CalculateNetIncomeAsync(int month, int year)
@@ -123,7 +133,7 @@ public class FinancialService : IFinancialService
         if (partner == null) return 0;
         var actualIncome = await _financialRepository.GetPartnerIncomeAsync(partnerId, month, year);
         var expectedIncome = 200000m;
-        var settlement = actualIncome - expectedIncome;
+        var settlement = actualIncome - expectedIncome; 
         return Math.Round(settlement, 2);
     }
 }

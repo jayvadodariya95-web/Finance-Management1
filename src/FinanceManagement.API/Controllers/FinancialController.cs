@@ -32,15 +32,25 @@ public class FinancialController : ControllerBase
         {
             // BUG: No role authorization - any authenticated user can view financial reports
             // BUG: No validation for month/year parameters
-            
+
             if (month < 1 || month > 12)
             {
                 return BadRequest(ApiResponse<MonthlyReportDto>.ErrorResult("Invalid month"));
             }
 
+            var currentYear = DateTime.UtcNow.Year;
+            if (year < 2000 || year > currentYear)
+            {
+                return BadRequest(ApiResponse<MonthlyReportDto>.ErrorResult("Invalid year"));
+            }
+
             var report = await _financialService.GenerateMonthlyReportAsync(month, year);
-            
+
             return Ok(ApiResponse<MonthlyReportDto>.SuccessResult(report));
+        }
+        catch(ArgumentOutOfRangeException ex)
+        {
+            return BadRequest("invalid date");        
         }
         catch (Exception ex)
         {
@@ -80,9 +90,9 @@ public class FinancialController : ControllerBase
         {
             // BUG: No role authorization - any authenticated user can process settlements
             // BUG: No validation to prevent duplicate processing
-            
+
             await _financialService.ProcessSettlementsAsync(month, year);
-            
+
             return Ok(ApiResponse<string>.SuccessResult("Settlements processed successfully"));
         }
         catch (Exception ex)
