@@ -21,14 +21,9 @@ public class ProjectRepository : IProjectRepository
 
     public async Task<IEnumerable<Project>> GetAllAsync()
     {
-        var projects = await _context.Projects.ToListAsync();
-        
-        foreach (var project in projects)
-        {
-            project.ManagedByPartner = await _context.Partners
-                .FirstOrDefaultAsync(p => p.Id == project.ManagedByPartnerId);
-        }
-        
+        var projects = await _context.Projects
+            .Include(p => p.ManagedByPartner)
+            .ToListAsync();
         return projects;
     }
 
@@ -95,7 +90,7 @@ public class PartnerRepository : IPartnerRepository
     public async Task<IEnumerable<Partner>> GetMainPartnersAsync()
     {
         return await _context.Partners
-            //.Include(p => p.User.Partner)
+            .Include(p => p.User)
             .Where(p => p.IsMainPartner)
             .ToListAsync();
     }
