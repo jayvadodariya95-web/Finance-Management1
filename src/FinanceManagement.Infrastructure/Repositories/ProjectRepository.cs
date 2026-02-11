@@ -21,15 +21,9 @@ public class ProjectRepository : IProjectRepository
 
     public async Task<IEnumerable<Project>> GetAllAsync()
     {
-        var projects = await _context.Projects.ToListAsync();
-        
-        foreach (var project in projects)
-        {
-            project.ManagedByPartner = await _context.Partners
-                .FirstOrDefaultAsync(p => p.Id == project.ManagedByPartnerId);
-        }
-        
-        return projects;
+        return await _context.Projects
+                              .Include(p => p.ManagedByPartner)
+                              .ToListAsync();
     }
 
     public async Task<IEnumerable<Project>> GetByPartnerAsync(int partnerId)
