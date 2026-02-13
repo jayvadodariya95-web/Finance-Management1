@@ -7,13 +7,10 @@ using System.Threading.Tasks;
 
 namespace FinanceManagement.Domain.Entities
 {
-   public class Documents : BaseEntity
+    public class Documents : BaseEntity
     {
-        
         public int DocType_id { get; set; }
-
         public string? Link { get; set; }
-
         //Navigation property
         public DocType? DocType { get; set; }
     }

@@ -9,10 +9,11 @@ public class Partner : BaseEntity
     public decimal SharePercentage { get; set; }
     public int? BranchId { get; set; }
     public bool IsMainPartner { get; set; }
-    
+
     public User User { get; set; } = null!;
     public Branch? Branch { get; set; }
     public ICollection<Project> ManagedProjects { get; set; } = new List<Project>();
     public ICollection<Settlement> Settlements { get; set; } = new List<Settlement>();
     public ICollection<MonthlyExpense> MonthlyExpenses { get; set; } = new List<MonthlyExpense>();
+    public ICollection<Revenue> Revenues { get; set; }
 }
