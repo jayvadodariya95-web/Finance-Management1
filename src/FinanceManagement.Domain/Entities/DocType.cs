@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace FinanceManagement.Domain.Entities
 {
-    class DocType : BaseEntity
+   public class DocType : BaseEntity
     {
         public string? TypeName { get; set; }
         
