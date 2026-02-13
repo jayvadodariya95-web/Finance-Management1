@@ -6,6 +6,12 @@ public enum UserRole
     Partner = 2,
     Employee = 3
 }
+public enum Gender
+{
+    Male = 1,
+    Female = 2,
+    Others = 3
+}
 
 public enum ProjectStatus
 {
