@@ -4,7 +4,8 @@ public enum UserRole
 {
     Admin = 1,
     Partner = 2,
-    Employee = 3
+    Employee = 3,
+    Internet = 4
 }
 
 public enum Gender
