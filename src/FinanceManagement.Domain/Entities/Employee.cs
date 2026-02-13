@@ -18,4 +18,6 @@ public class Employee : BaseEntity
     public User User { get; set; } = null!;
     public Branch? Branch { get; set; }
     public ICollection<ProjectEmployee> ProjectAssignments { get; set; } = new List<ProjectEmployee>();
+    public ICollection<EmployeeDocument> EmployeeDocuments { get; set; } = new List<EmployeeDocument>();
+
 }

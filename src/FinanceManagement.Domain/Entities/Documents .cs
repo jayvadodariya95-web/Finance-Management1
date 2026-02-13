@@ -13,5 +13,7 @@ namespace FinanceManagement.Domain.Entities
         public string? Link { get; set; }
         //Navigation property
         public DocType? DocType { get; set; }
+        public ICollection<EmployeeDocument> EmployeeDocuments { get; set; } = new List<EmployeeDocument>();
+
     }
 }
