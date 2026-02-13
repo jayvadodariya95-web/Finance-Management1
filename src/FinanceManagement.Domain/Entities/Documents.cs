@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace FinanceManagement.Domain.Entities
 {
-    class Documents : BaseEntity
+  public  class Documents : BaseEntity
     {
         //Foreign key
         public int DocType_id { get; set; }
