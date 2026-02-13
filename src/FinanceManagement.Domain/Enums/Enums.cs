@@ -13,13 +13,6 @@ public enum Gender
     Others = 3
 }
 
-public enum Gender
-{
-    Male = 1,
-    Female = 2,
-    Others = 3
-}
-
 public enum ProjectStatus
 {
     Active = 1,
@@ -49,5 +42,6 @@ public enum ExpenseCategory
     Marketing = 3,
     Travel = 4,
     Utilities = 5,
-    Other = 6
+    Salary = 6,
+    Other = 7
 }
