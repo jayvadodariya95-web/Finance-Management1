@@ -39,7 +39,7 @@ public enum SettlementStatus
 {
     Pending = 1,
     Completed = 2,
-    Failed = 3
+    //Failed = 3
 }
 
 public enum ExpenseCategory

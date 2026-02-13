@@ -11,8 +11,11 @@ public class Settlement : BaseEntity
     public decimal ExpectedAmount { get; set; }
     public decimal ActualAmount { get; set; }
     public decimal SettlementAmount { get; set; }
+    public decimal? TotalExpenses { get; set; }
     public SettlementStatus Status { get; set; }
-    public DateTime? ProcessedDate { get; set; }
+    public DateTime? SettledDate { get; set; }
+    public decimal? GrossProfit { get; set; }
+    public decimal? NetProfit { get; set; }
     public string? Notes { get; set; }
     
     public Partner Partner { get; set; } = null!;
