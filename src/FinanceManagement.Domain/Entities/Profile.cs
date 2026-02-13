@@ -13,6 +13,7 @@ namespace FinanceManagement.Domain.Entities
         public bool IsPaid { get; set; } = false;
         public decimal? Amount { get; set; }
         public User User { get; set; } = null!;
+        public ICollection<Project> Projects { get; set; } = new List<Project>();
     }
 
 }

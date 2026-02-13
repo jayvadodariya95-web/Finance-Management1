@@ -22,5 +22,5 @@ public class User : BaseEntity
     public Partner? Partner { get; set; }
     public Employee? Employee { get; set; }
 
-    //public Profile? Profile {get; set; }
+    public Profile? Profile {get; set; }
 }

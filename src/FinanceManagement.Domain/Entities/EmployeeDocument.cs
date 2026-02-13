@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace FinanceManagement.Domain.Entities
 {
-    class EmployeeDocument : BaseEntity
+    public class EmployeeDocument : BaseEntity
     {
         public int EmployeeId { get; set; }
         public int DocId { get; set; }

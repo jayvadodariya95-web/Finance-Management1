@@ -32,4 +32,5 @@ public class Project : BaseEntity
     public ICollection<BankTransaction> BankTransactions { get; set; } = new List<BankTransaction>();
     public ICollection<ProjectEmployee> ProjectEmployees { get; set; } = new List<ProjectEmployee>();
     public Profile Profile { get; set; } = null!;
+    public ICollection<Revenue> Revenues { get; set; } = new List<Revenue>();
 }
