@@ -7,6 +7,13 @@ public enum UserRole
     Employee = 3
 }
 
+public enum Gender
+{
+    Male = 1,
+    Female = 2,
+    Others = 3
+}
+
 public enum ProjectStatus
 {
     Active = 1,
