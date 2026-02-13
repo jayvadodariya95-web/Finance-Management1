@@ -72,7 +72,7 @@ public class FinanceDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
-            entity.Property(e => e.ClientName).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.ClientManagerName).IsRequired().HasMaxLength(200);
             entity.HasOne(e => e.ManagedByPartner)
                   .WithMany(p => p.ManagedProjects)
                   .HasForeignKey(e => e.ManagedByPartnerId);

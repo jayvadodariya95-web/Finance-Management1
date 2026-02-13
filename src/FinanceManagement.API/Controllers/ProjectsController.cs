@@ -46,7 +46,7 @@ public class ProjectsController : ControllerBase
                 {
                     Id = project.Id,
                     Name = project.Name,
-                    ClientName = project.ClientName,
+                    ClientName = project.ClientManagerName,
                     ProjectValue = project.ProjectValue,
                     StartDate = project.StartDate,
                     EndDate = project.EndDate,
@@ -84,7 +84,7 @@ public class ProjectsController : ControllerBase
             {
                 Id = project.Id,
                 Name = project.Name,
-                ClientName = project.ClientName,
+                ClientName = project.ClientManagerName,
                 ProjectValue = project.ProjectValue,
                 StartDate = project.StartDate,
                 EndDate = project.EndDate,
@@ -110,7 +110,7 @@ public class ProjectsController : ControllerBase
             {
                 Name = request.Name,
                 Description = request.Description,
-                ClientName = request.ClientName,
+                ClientManagerName = request.ClientName,
                 ProjectValue = request.ProjectValue,
                 StartDate = request.StartDate,
                 EndDate = request.EndDate,
@@ -125,7 +125,7 @@ public class ProjectsController : ControllerBase
             {
                 Id = createdProject.Id,
                 Name = createdProject.Name,
-                ClientName = createdProject.ClientName,
+                ClientName = createdProject.ClientManagerName,
                 ProjectValue = createdProject.ProjectValue,
                 StartDate = createdProject.StartDate,
                 EndDate = createdProject.EndDate,
@@ -169,7 +169,7 @@ public class ProjectsController : ControllerBase
             {
                 Id = p.Id,
                 Name = p.Name,
-                ClientName = p.ClientName,
+                ClientName = p.ClientManagerName,
                 ProjectValue = p.ProjectValue,
                 StartDate = p.StartDate,
                 EndDate = p.EndDate,
