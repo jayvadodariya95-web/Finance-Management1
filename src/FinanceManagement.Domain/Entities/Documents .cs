@@ -9,10 +9,12 @@ namespace FinanceManagement.Domain.Entities
 {
     public class Documents : BaseEntity
     {
-        public int DocType_id { get; set; }
+        public int DocType_Id { get; set; }
         public string? Link { get; set; }
         //Navigation property
         public DocType? DocType { get; set; }
+
+        public ICollection<EmployeeDocument> EmployeeDocuments { get; set; } = new List<EmployeeDocument>();
         public ICollection<EmployeeDocument> EmployeeDocuments { get; set; } = new List<EmployeeDocument>();
 
     }
