@@ -15,5 +15,7 @@ namespace FinanceManagement.Domain.Entities
         public DocType? DocType { get; set; }
 
         public ICollection<EmployeeDocument> EmployeeDocuments { get; set; } = new List<EmployeeDocument>();
+        public ICollection<EmployeeDocument> EmployeeDocuments { get; set; } = new List<EmployeeDocument>();
+
     }
 }
