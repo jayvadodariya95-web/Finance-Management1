@@ -161,7 +161,7 @@ public class FinanceDbContext : DbContext
 
             // 🔹 User relationship (1-1)
             entity.HasOne(e => e.User)
-                  .WithOne()
+                  .WithOne(e => e.Employee)
                   .HasForeignKey<Employee>(e => e.UserId)
                   .OnDelete(DeleteBehavior.Restrict);
 
