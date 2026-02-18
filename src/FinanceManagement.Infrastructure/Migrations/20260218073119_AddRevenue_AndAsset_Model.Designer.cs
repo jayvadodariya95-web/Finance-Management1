@@ -4,6 +4,7 @@ using FinanceManagement.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FinanceManagement.Infrastructure.Migrations
 {
     [DbContext(typeof(FinanceDbContext))]
-    partial class FinanceDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260218073119_AddRevenue_AndAsset_Model")]
+    partial class AddRevenue_AndAsset_Model
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -63,6 +66,7 @@ namespace FinanceManagement.Infrastructure.Migrations
 
                     b.ToTable("Assets");
                 });
+
             modelBuilder.Entity("FinanceManagement.Domain.Entities.BankAccount", b =>
                 {
                     b.Property<int>("Id")
@@ -295,6 +299,7 @@ namespace FinanceManagement.Infrastructure.Migrations
 
                     b.Property<int?>("AssetId")
                         .HasColumnType("int");
+
                     b.Property<int>("Category")
                         .HasColumnType("int");
 
@@ -330,6 +335,7 @@ namespace FinanceManagement.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AssetId");
+
                     b.ToTable("MonthlyExpenses");
                 });
 

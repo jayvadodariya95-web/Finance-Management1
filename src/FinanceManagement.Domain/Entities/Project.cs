@@ -18,6 +18,7 @@ public class Project : BaseEntity
     public Partner ManagedByPartner { get; set; } = null!;
     public ICollection<ProjectEmployee> ProjectEmployees { get; set; } = new List<ProjectEmployee>();
     public ICollection<BankTransaction> BankTransactions { get; set; } = new List<BankTransaction>();
+    public ICollection<Revenue> Revenues { get; set; } = new List<Revenue>();
     
     // BUG: ProjectValue can be negative
     // BUG: EndDate can be before StartDate
