@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using FinanceManagement.Domain.Entities;
 
 namespace FinanceManagement.Infrastructure.Data;
@@ -146,6 +146,39 @@ public class FinanceDbContext : DbContext
             entity.Property(e => e.Balance).HasPrecision(18, 2);
             
             // BUG: Missing unique constraint on AccountNumber
+        });
+        // Doc-Type configuration
+        modelBuilder.Entity<DocType>(entity =>
+        {
+            entity.ToTable("DocTypes");
+
+            entity.HasKey(dt => dt.Id);
+
+            entity.Property(dt => dt.TypeName)
+                  .IsRequired()
+                  .HasMaxLength(150);
+            entity.HasIndex(dt => dt.TypeName)
+                  .IsUnique();
+
+            entity.HasMany(dt => dt.Documents)
+                  .WithOne(d => d.DocType)
+                  .HasForeignKey(d => d.DocType_Id)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+        //Documents configuration
+        modelBuilder.Entity<Documents>(entity =>
+        {
+            entity.ToTable("Documents");
+
+            entity.HasKey(d => d.Id);
+            entity.Property(d => d.Link)
+                  .HasMaxLength(500);
+ 
+            entity.HasOne(d => d.DocType)
+                  .WithMany(dt => dt.Documents)
+                  .HasForeignKey(d => d.DocType_Id)
+                  .OnDelete(DeleteBehavior.Restrict);
+            entity.HasIndex(d => d.DocType_Id);
         });
     }
 }
