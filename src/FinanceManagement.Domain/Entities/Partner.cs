@@ -14,4 +14,5 @@ public class Partner : BaseEntity
     public Branch? Branch { get; set; }
     public ICollection<Project> ManagedProjects { get; set; } = new List<Project>();
     public ICollection<Settlement> Settlements { get; set; } = new List<Settlement>();
+    public ICollection<Revenue> Revenues { get; set; } = new List<Revenue>();
 }

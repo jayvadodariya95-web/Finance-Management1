@@ -32,7 +32,7 @@ public class FinanceDbContext : DbContext
             entity.Property(e => e.FirstName).IsRequired().HasMaxLength(100);
             entity.Property(e => e.LastName).IsRequired().HasMaxLength(100);
             entity.Property(e => e.PasswordHash).IsRequired();
-            
+
             // BUG: Missing unique constraint on Email
             // PERFORMANCE ISSUE: Missing index on Email for login queries
         });
@@ -47,7 +47,7 @@ public class FinanceDbContext : DbContext
             entity.HasOne(e => e.Branch)
                   .WithMany(b => b.Partners)
                   .HasForeignKey(e => e.BranchId);
-            
+
             // BUG: Missing index on UserId - will cause slow queries
             // BUG: No validation for SharePercentage range
         });
@@ -62,7 +62,7 @@ public class FinanceDbContext : DbContext
             entity.HasOne(e => e.Branch)
                   .WithMany(b => b.Employees)
                   .HasForeignKey(e => e.BranchId);
-            
+
             // BUG: Missing unique constraint on EmployeeCode
             // PERFORMANCE ISSUE: Missing index on UserId
         });
@@ -76,7 +76,7 @@ public class FinanceDbContext : DbContext
             entity.HasOne(e => e.ManagedByPartner)
                   .WithMany(p => p.ManagedProjects)
                   .HasForeignKey(e => e.ManagedByPartnerId);
-            
+
             // PERFORMANCE ISSUE: Missing index on ManagedByPartnerId
             // BUG: No check constraint for ProjectValue > 0
         });
@@ -93,7 +93,7 @@ public class FinanceDbContext : DbContext
                   .WithMany(emp => emp.ProjectAssignments)
                   .HasForeignKey(e => e.EmployeeId)
                   .OnDelete(DeleteBehavior.Restrict);
-            
+
             // BUG: Missing unique constraint on ProjectId + EmployeeId combination
             // PERFORMANCE ISSUE: Missing composite index
         });
@@ -109,7 +109,7 @@ public class FinanceDbContext : DbContext
             entity.HasOne(e => e.Project)
                   .WithMany(p => p.BankTransactions)
                   .HasForeignKey(e => e.ProjectId);
-            
+
             // PERFORMANCE ISSUE: Missing index on TransactionDate for date range queries
             // BUG: No concurrency token for preventing double processing
         });
@@ -124,7 +124,7 @@ public class FinanceDbContext : DbContext
             entity.HasOne(e => e.Partner)
                   .WithMany(p => p.Settlements)
                   .HasForeignKey(e => e.PartnerId);
-            
+
             // BUG: Missing unique constraint on PartnerId + Month + Year
         });
 
@@ -134,7 +134,7 @@ public class FinanceDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Amount).HasPrecision(18, 2);
             entity.Property(e => e.Description).IsRequired().HasMaxLength(500);
-            
+
             // PERFORMANCE ISSUE: Missing index on Month + Year for monthly reports
         });
 
@@ -144,7 +144,7 @@ public class FinanceDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.AccountNumber).IsRequired().HasMaxLength(50);
             entity.Property(e => e.Balance).HasPrecision(18, 2);
-            
+
             // BUG: Missing unique constraint on AccountNumber
         });
         // Doc-Type configuration
@@ -173,12 +173,43 @@ public class FinanceDbContext : DbContext
             entity.HasKey(d => d.Id);
             entity.Property(d => d.Link)
                   .HasMaxLength(500);
- 
+
             entity.HasOne(d => d.DocType)
                   .WithMany(dt => dt.Documents)
                   .HasForeignKey(d => d.DocType_Id)
                   .OnDelete(DeleteBehavior.Restrict);
             entity.HasIndex(d => d.DocType_Id);
+        });
+
+        //Renvenue to Project one-to-one configuration
+        modelBuilder.Entity<Revenue>(entity =>
+        {
+            entity.HasOne(p => p.Project)
+                .WithOne(r => r.Revenue)
+                .HasForeignKey<Revenue>(r => r.ProjectId);
+        });
+
+        modelBuilder.Entity<Revenue>(entity =>
+        {
+            entity.HasIndex(r => r.ProjectId).IsUnique();
+        });
+
+        //Revenue to Partner one-to-many configuration
+        modelBuilder.Entity<Revenue>(entity =>
+        {
+            entity.HasOne(r => r.Partner)
+            .WithMany(p => p.Revenues)
+            .HasForeignKey(r => r.PartnerId);
+        });
+
+        //asset
+        modelBuilder.Entity<Asset>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name)
+                  .HasMaxLength(200);
+            entity.Property(e => e.Amount)
+                  .HasPrecision(18, 2);
         });
     }
 }
