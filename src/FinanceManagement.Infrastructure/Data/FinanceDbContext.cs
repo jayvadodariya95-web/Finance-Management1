@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using FinanceManagement.Domain.Entities;
+using System.Text;
 
 namespace FinanceManagement.Infrastructure.Data;
 
@@ -20,6 +21,9 @@ public class FinanceDbContext : DbContext
     public DbSet<MonthlyExpense> MonthlyExpenses { get; set; }
     public DbSet<Settlement> Settlements { get; set; }
     public DbSet<Profile> Profiles { get; set; }
+    public DbSet<DocType> DocTypes { get; set; }
+    public DbSet<Documents> Documents { get; set; }
+    public DbSet<EmployeeDocument> EmployeeDocuments { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -235,6 +239,22 @@ public class FinanceDbContext : DbContext
                   .OnDelete(DeleteBehavior.Restrict);
             entity.HasIndex(p => p.UserId)
                   .IsUnique();
+        });
+        // Employee_Document Configuration
+        modelBuilder.Entity<EmployeeDocument>(entity =>
+        {
+            entity.HasKey(e => new { e.EmployeeId, e.DocumentId });
+            entity.HasIndex(e => new { e.EmployeeId, e.DocumentId }).IsUnique();
+
+            entity.HasOne(e => e.Employee)
+            .WithMany(e => e.EmployeeDocuments)
+            .HasForeignKey(e => e.EmployeeId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Documents)
+            .WithMany(e => e.EmployeeDocuments)
+            .HasForeignKey(e => e.DocumentId)
+            .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }
