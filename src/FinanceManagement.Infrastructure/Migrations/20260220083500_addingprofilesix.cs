@@ -62,7 +62,6 @@ namespace FinanceManagement.Infrastructure.Migrations
                 principalColumn: "Id",
                 onDelete: ReferentialAction.Restrict);
         }
-
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {

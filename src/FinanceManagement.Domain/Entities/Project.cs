@@ -14,7 +14,6 @@ public class Project : BaseEntity
     public ProjectStatus Status { get; set; }
     public int ManagedByPartnerId { get; set; }
     public int? ProfileId { get; set; }
-
     // Navigation properties
     public Profile? Profile { get; set; }
     public Partner ManagedByPartner { get; set; } = null!;

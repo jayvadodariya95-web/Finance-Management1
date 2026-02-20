@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
 namespace FinanceManagement.Domain.Entities
 {
     public class Profile : BaseEntity
@@ -15,5 +14,4 @@ namespace FinanceManagement.Domain.Entities
         public User User { get; set; } = null!;
         public ICollection<Project> Projects { get; set; } = new List<Project>();
     }
-
 }
