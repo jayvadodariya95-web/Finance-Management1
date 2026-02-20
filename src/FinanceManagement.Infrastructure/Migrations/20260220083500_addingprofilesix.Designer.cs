@@ -4,6 +4,7 @@ using FinanceManagement.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FinanceManagement.Infrastructure.Migrations
 {
     [DbContext(typeof(FinanceDbContext))]
-    partial class FinanceDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260220083500_addingprofilesix")]
+    partial class addingprofilesix
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -510,6 +513,7 @@ namespace FinanceManagement.Infrastructure.Migrations
 
                     b.ToTable("Profiles");
                 });
+
             modelBuilder.Entity("FinanceManagement.Domain.Entities.Project", b =>
                 {
                     b.Property<int>("Id")
@@ -548,6 +552,7 @@ namespace FinanceManagement.Infrastructure.Migrations
 
                     b.Property<int?>("ProfileId")
                         .HasColumnType("int");
+
                     b.Property<decimal>("ProjectValue")
                         .HasColumnType("decimal(18,2)");
 
@@ -568,6 +573,7 @@ namespace FinanceManagement.Infrastructure.Migrations
                     b.HasIndex("ManagedByPartnerId");
 
                     b.HasIndex("ProfileId");
+
                     b.ToTable("Projects");
                 });
 
@@ -875,6 +881,7 @@ namespace FinanceManagement.Infrastructure.Migrations
 
                     b.Navigation("User");
                 });
+
             modelBuilder.Entity("FinanceManagement.Domain.Entities.Project", b =>
                 {
                     b.HasOne("FinanceManagement.Domain.Entities.Partner", "ManagedByPartner")
@@ -887,7 +894,9 @@ namespace FinanceManagement.Infrastructure.Migrations
                         .WithMany("Projects")
                         .HasForeignKey("ProfileId")
                         .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("ManagedByPartner");
+
                     b.Navigation("Profile");
                 });
 
@@ -973,6 +982,7 @@ namespace FinanceManagement.Infrastructure.Migrations
                 {
                     b.Navigation("Projects");
                 });
+
             modelBuilder.Entity("FinanceManagement.Domain.Entities.Project", b =>
                 {
                     b.Navigation("BankTransactions");
@@ -987,6 +997,7 @@ namespace FinanceManagement.Infrastructure.Migrations
                     b.Navigation("Employee");
 
                     b.Navigation("Partner");
+
                     b.Navigation("Profile");
                 });
 #pragma warning restore 612, 618
