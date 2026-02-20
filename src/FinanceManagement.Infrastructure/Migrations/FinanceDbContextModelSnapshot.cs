@@ -468,48 +468,6 @@ namespace FinanceManagement.Infrastructure.Migrations
                     b.ToTable("Partners");
                 });
 
-            modelBuilder.Entity("FinanceManagement.Domain.Entities.Profile", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int?>("Amount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsPaid")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
-
-                    b.ToTable("Profiles");
-                });
             modelBuilder.Entity("FinanceManagement.Domain.Entities.Project", b =>
                 {
                     b.Property<int>("Id")
@@ -546,8 +504,6 @@ namespace FinanceManagement.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<int?>("ProfileId")
-                        .HasColumnType("int");
                     b.Property<decimal>("ProjectValue")
                         .HasColumnType("decimal(18,2)");
 
@@ -567,7 +523,6 @@ namespace FinanceManagement.Infrastructure.Migrations
 
                     b.HasIndex("ManagedByPartnerId");
 
-                    b.HasIndex("ProfileId");
                     b.ToTable("Projects");
                 });
 
@@ -865,16 +820,6 @@ namespace FinanceManagement.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("FinanceManagement.Domain.Entities.Profile", b =>
-                {
-                    b.HasOne("FinanceManagement.Domain.Entities.User", "User")
-                        .WithOne("Profile")
-                        .HasForeignKey("FinanceManagement.Domain.Entities.Profile", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
             modelBuilder.Entity("FinanceManagement.Domain.Entities.Project", b =>
                 {
                     b.HasOne("FinanceManagement.Domain.Entities.Partner", "ManagedByPartner")
@@ -883,12 +828,7 @@ namespace FinanceManagement.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("FinanceManagement.Domain.Entities.Profile", "Profile")
-                        .WithMany("Projects")
-                        .HasForeignKey("ProfileId")
-                        .OnDelete(DeleteBehavior.Restrict);
                     b.Navigation("ManagedByPartner");
-                    b.Navigation("Profile");
                 });
 
             modelBuilder.Entity("FinanceManagement.Domain.Entities.ProjectEmployee", b =>
@@ -969,10 +909,6 @@ namespace FinanceManagement.Infrastructure.Migrations
                     b.Navigation("Settlements");
                 });
 
-            modelBuilder.Entity("FinanceManagement.Domain.Entities.Profile", b =>
-                {
-                    b.Navigation("Projects");
-                });
             modelBuilder.Entity("FinanceManagement.Domain.Entities.Project", b =>
                 {
                     b.Navigation("BankTransactions");
@@ -987,7 +923,6 @@ namespace FinanceManagement.Infrastructure.Migrations
                     b.Navigation("Employee");
 
                     b.Navigation("Partner");
-                    b.Navigation("Profile");
                 });
 #pragma warning restore 612, 618
         }

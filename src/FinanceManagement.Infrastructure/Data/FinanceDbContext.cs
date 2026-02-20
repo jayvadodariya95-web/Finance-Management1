@@ -19,7 +19,6 @@ public class FinanceDbContext : DbContext
     public DbSet<BankTransaction> BankTransactions { get; set; }
     public DbSet<MonthlyExpense> MonthlyExpenses { get; set; }
     public DbSet<Settlement> Settlements { get; set; }
-    public DbSet<Profile> Profiles { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -213,29 +212,6 @@ public class FinanceDbContext : DbContext
                   .HasMaxLength(200);
             entity.Property(e => e.Amount)
                   .HasPrecision(18, 2);
-        });
-        // Profile configuration
-        modelBuilder.Entity<Profile>(entity =>
-        {
-            entity.HasKey(p => p.Id);
-
-            entity.Property(p => p.IsPaid)
-                  .HasDefaultValue(false);
-
-            entity.Property(p => p.Amount)
-                  .HasPrecision(18, 2);
-
-            entity.HasOne(p => p.User)
-                  .WithOne(u => u.Profile)
-                  .HasForeignKey<Profile>(p => p.UserId);
-
-            entity.HasMany(p => p.Projects)
-                  .WithOne(pr => pr.Profile)
-                  .HasForeignKey(pr => pr.ProfileId)
-                  .OnDelete(DeleteBehavior.Restrict);
-
-            entity.HasIndex(p => p.UserId)
-                  .IsUnique();
         });
     }
 }
