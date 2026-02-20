@@ -15,7 +15,7 @@ public class User : BaseEntity
     public UserGender Gender { get; set; }
     public UserRole Role { get; set; }
     public bool IsActive { get; set; } = true;
-    
+    public Profile? Profile { get; set; }
     public Partner? Partner { get; set; }
     public Employee? Employee { get; set; }
 }
