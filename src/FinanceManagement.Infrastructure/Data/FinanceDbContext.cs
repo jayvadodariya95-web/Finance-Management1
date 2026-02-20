@@ -59,6 +59,8 @@ public class FinanceDbContext : DbContext
             entity.HasOne(e => e.User)
                   .WithOne(u => u.Employee)
                   .HasForeignKey<Employee>(e => e.UserId);
+            entity.HasIndex(e => e.EmployeeCode).IsUnique();
+            entity.HasIndex(e => e.UserId);
             entity.HasOne(e => e.Branch)
                   .WithMany(b => b.Employees)
                   .HasForeignKey(e => e.BranchId);
@@ -90,7 +92,7 @@ public class FinanceDbContext : DbContext
                   .HasForeignKey(e => e.ProjectId)
                   .OnDelete(DeleteBehavior.Restrict);
             entity.HasOne(e => e.Employee)
-                  .WithMany(emp => emp.ProjectAssignments)
+                  .WithMany(emp => emp.ProjectEmployee)
                   .HasForeignKey(e => e.EmployeeId)
                   .OnDelete(DeleteBehavior.Restrict);
 
