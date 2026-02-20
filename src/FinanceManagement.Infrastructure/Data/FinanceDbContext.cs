@@ -233,7 +233,6 @@ public class FinanceDbContext : DbContext
                   .WithOne(pr => pr.Profile)
                   .HasForeignKey(pr => pr.ProfileId)
                   .OnDelete(DeleteBehavior.Restrict);
-
             entity.HasIndex(p => p.UserId)
                   .IsUnique();
         });
