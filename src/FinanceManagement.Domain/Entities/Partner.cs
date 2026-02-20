@@ -15,4 +15,5 @@ public class Partner : BaseEntity
     public ICollection<Project> ManagedProjects { get; set; } = new List<Project>();
     public ICollection<Settlement> Settlements { get; set; } = new List<Settlement>();
     public ICollection<Revenue> Revenues { get; set; } = new List<Revenue>();
+    public ICollection<MonthlyExpense> MonthlyExpenses { get; set; } = new List<MonthlyExpense>();
 }
