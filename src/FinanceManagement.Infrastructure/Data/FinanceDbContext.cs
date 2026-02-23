@@ -135,14 +135,39 @@ public class FinanceDbContext : DbContext
             // BUG: Missing unique constraint on PartnerId + Month + Year
         });
 
+        
         // MonthlyExpense configuration
         modelBuilder.Entity<MonthlyExpense>(entity =>
         {
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.Amount).HasPrecision(18, 2);
-            entity.Property(e => e.Description).IsRequired().HasMaxLength(500);
 
+            entity.HasKey(me => me.Id);
+            entity.Property(me => me.Description)
+                  .IsRequired()
+                  .HasMaxLength(500);
+            entity.Property(me => me.Amount)
+                  .HasPrecision(18, 2)
+                  .IsRequired();
+            entity.Property(me => me.Category)
+                  .IsRequired()
+                  .HasConversion<int>();
+            entity.Property(me => me.IsRecurring)
+                  .HasDefaultValue(false);
+            entity.Property(me => me.ApprovedBy)
+                  .HasMaxLength(150);
+            entity.HasOne(me => me.Partner)
+                  .WithMany(p => p.MonthlyExpenses)
+                  .HasForeignKey(me => me.PartnerId)
+                  .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(me => me.Employee)
+                  .WithMany(e => e.MonthlyExpenses)
+                  .HasForeignKey(me => me.EmployeeId)
+                  .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(me => me.Asset)
+                  .WithMany(a => a.MonthlyExpenses)
+                  .HasForeignKey(me => me.AssetId)
+                  .OnDelete(DeleteBehavior.Restrict);
             // PERFORMANCE ISSUE: Missing index on Month + Year for monthly reports
+            // MonthlyExpense configuration
         });
 
         // BankAccount configuration

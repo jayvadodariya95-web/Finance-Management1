@@ -21,4 +21,5 @@ public class Employee : BaseEntity
     public Branch? Branch { get; set; }
     public ICollection<ProjectEmployee> ProjectEmployee { get; set; } = new List<ProjectEmployee>();
     public ICollection<EmployeeDocument> EmployeeDocuments { get; set; } = new List<EmployeeDocument>();
+    public ICollection<MonthlyExpense> MonthlyExpenses { get; set; } = new List<MonthlyExpense>();
 }
