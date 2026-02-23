@@ -11,7 +11,8 @@ public class ProjectEmployee : BaseEntity
     public string? Role { get; set; }
     public decimal? HourlyRate { get; set; }
     public bool IsActive { get; set; } = true;
-    
+    public bool IsBench { get; set; } = false;
+
     // Navigation properties
     public Project Project { get; set; } = null!;
     public Employee Employee { get; set; } = null!;

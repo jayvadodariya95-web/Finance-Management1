@@ -100,15 +100,20 @@ public class FinancialService : IFinancialService
 
         foreach (var partner in partners)
         {
-            var settlementAmount = await CalculatePartnerSettlementAsync(partner.Id, month, year);
-            
+            var actualAmount = (int)await _financialRepository
+                    .GetPartnerIncomeAsync(partner.Id, month, year);
+
+            var expectedAmount = 200000;
+
+            var settlementAmount = actualAmount - expectedAmount;
+
             var settlement = new Settlement
             {
                 PartnerId = partner.Id,
                 Month = month,
                 Year = year,
-                ExpectedAmount = 200000m,
-                ActualAmount = await _financialRepository.GetPartnerIncomeAsync(partner.Id, month, year),
+                ExpectedAmount = expectedAmount,
+                ActualAmount = actualAmount,
                 SettlementAmount = settlementAmount,
                 Status = SettlementStatus.Pending,
                 CreatedAt = DateTime.UtcNow
