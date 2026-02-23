@@ -77,16 +77,48 @@ public class FinanceDbContext : DbContext
         // Project configuration
         modelBuilder.Entity<Project>(entity =>
         {
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
-            entity.Property(e => e.ClientName).IsRequired().HasMaxLength(200);
-            entity.HasOne(e => e.ManagedByPartner)
-                  .WithMany(p => p.ManagedProjects)
-                  .HasForeignKey(e => e.ManagedByPartnerId);
-
-            // PERFORMANCE ISSUE: Missing index on ManagedByPartnerId
-            // BUG: No check constraint for ProjectValue > 0
+            entity.ToTable("Projects");
+            entity.HasKey(p => p.Id);
+            entity.Property(p => p.Name)
+                  .IsRequired()
+                  .HasMaxLength(150);
+            entity.Property(p => p.StartDate)
+                  .IsRequired();
+            entity.Property(p => p.TechnologyStack)
+                  .HasMaxLength(150);
+            entity.Property(p => p.ManagerName)
+                  .HasMaxLength(50);
+            entity.Property(p => p.ManagerEmail)
+                  .HasMaxLength(50);
+            entity.Property(p => p.ManagerContact)
+                  .HasMaxLength(20);
+            entity.Property(p => p.LeaveApplyWay)
+                  .HasMaxLength(255);
+            entity.Property(p => p.IsSmooth)
+                  .HasDefaultValue(false);
+            entity.Property(p => p.ProjectValue)
+                  .HasColumnType("int");
+            entity.Property(p => p.ClientManagerName)
+                  .HasMaxLength(50);
+            entity.Property(p => p.ClientManagerEmail)
+                  .HasMaxLength(50);
+            entity.Property(p => p.ClientManagerContact)
+                  .HasMaxLength(20);
+            entity.Property(p => p.MobileNumberUsed)
+                  .HasMaxLength(25);
+            entity.HasOne(p => p.Profile)
+                  .WithMany()
+                  .HasForeignKey(p => p.ProfileId)
+                  .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(p => p.InterviewingUser)
+                  .WithMany()
+                  .HasForeignKey(p => p.InterviewingUserId)
+                  .OnDelete(DeleteBehavior.Restrict);
+            entity.HasIndex(p => p.Name);
+            entity.HasIndex(p => p.ProfileId);
+            entity.HasIndex(p => p.InterviewingUserId);
         });
+
 
         // ProjectEmployee many-to-many configuration
         modelBuilder.Entity<ProjectEmployee>(entity =>
@@ -218,7 +250,8 @@ public class FinanceDbContext : DbContext
         {
             entity.HasOne(p => p.Project)
                 .WithOne(r => r.Revenue)
-                .HasForeignKey<Revenue>(r => r.ProjectId);
+                .HasForeignKey<Revenue>(r => r.ProjectId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<Revenue>(entity =>
