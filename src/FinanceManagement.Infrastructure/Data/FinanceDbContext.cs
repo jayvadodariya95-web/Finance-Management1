@@ -157,17 +157,44 @@ public class FinanceDbContext : DbContext
         modelBuilder.Entity<Settlement>(entity =>
         {
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.ExpectedAmount).HasPrecision(18, 2);
-            entity.Property(e => e.ActualAmount).HasPrecision(18, 2);
-            entity.Property(e => e.SettlementAmount).HasPrecision(18, 2);
+            entity.Property(e => e.Month)
+                  .IsRequired();
+            entity.Property(e => e.Year)
+                  .IsRequired();
+            entity.Property(e => e.ExpectedAmount)
+                  .HasPrecision(18, 2)
+                  .IsRequired();
+            entity.Property(e => e.ActualAmount)
+                  .HasPrecision(18, 2)
+                  .IsRequired();
+            entity.Property(e => e.SettlementAmount)
+                  .HasPrecision(18, 2)
+                  .IsRequired();
+            entity.Property(e => e.TotalExpense)
+                  .HasPrecision(18, 2);
+            entity.Property(e => e.GrossProfit)
+                  .HasPrecision(18, 2);
+            entity.Property(e => e.NetProfit)
+                  .HasPrecision(18, 2);
+            entity.Property(e => e.Status)
+                  .HasConversion<int>()  // Enum as int
+                  .IsRequired();
+            entity.Property(e => e.Notes)
+                  .HasMaxLength(1000);
+            entity.Property(e => e.IsSetteled)
+                  .HasDefaultValue(0);
+            // Relationship
             entity.HasOne(e => e.Partner)
                   .WithMany(p => p.Settlements)
-                  .HasForeignKey(e => e.PartnerId);
+                  .HasForeignKey(e => e.PartnerId)
+                  .OnDelete(DeleteBehavior.Restrict);
 
-            // BUG: Missing unique constraint on PartnerId + Month + Year
+            // Unique constraint (Partner + Month + Year)
+            entity.HasIndex(e => new { e.PartnerId, e.Month, e.Year })
+                  .IsUnique();
         });
 
-        
+
         // MonthlyExpense configuration
         modelBuilder.Entity<MonthlyExpense>(entity =>
         {
