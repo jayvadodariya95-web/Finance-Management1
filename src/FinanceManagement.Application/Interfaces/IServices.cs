@@ -1,3 +1,4 @@
+using FinanceManagement.Application.Common;
 using FinanceManagement.Application.DTOs;
 using FinanceManagement.Domain.Entities;
 
@@ -37,11 +38,11 @@ public interface INotificationService
 
 public interface IEmployeeServices
 {
-    Task<IEnumerable<GetAllEmployeeDto?>> GetAllAsync();
-    Task<GetAllEmployeeDto> GetByIdAsync(int id);
-    Task<EmployeeCreateDto> CreateAsync(EmployeeCreateDto dto);
-    Task<EmployeeUpdateDto> UpdateAsync(EmployeeUpdateDto dto, int id);
-    Task<GetAllEmployeeDto> DeleteAsync(int id);
+    Task<ApiResponse<IEnumerable<GetAllEmployeeDto?>>> GetAllAsync();
+    Task<ApiResponse<GetAllEmployeeDto>> GetByIdAsync(int id);
+    Task<ApiResponse<EmployeeCreateDto>> CreateAsync(EmployeeCreateDto dto);
+    Task<ApiResponse<EmployeeUpdateDto>> UpdateAsync(EmployeeUpdateDto dto, int id);
+    Task<ApiResponse<GetAllEmployeeDto>> DeleteAsync(int id);
 }
 
 // BUG: Missing proper error handling interfaces

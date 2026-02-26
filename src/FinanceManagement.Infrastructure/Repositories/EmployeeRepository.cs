@@ -2,6 +2,7 @@
 using FinanceManagement.Domain.Entities;
 using FinanceManagement.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -45,12 +46,6 @@ namespace FinanceManagement.Infrastructure.Repositories
         public async Task<Employee> UpdateAsync(Employee employee, int id)
         {
             var data = await context.Employees.Where(e => e.Id == id).FirstOrDefaultAsync();
-
-            if (data == null)
-                return null;
-
-            if (data.IsDeleted)
-                throw new ArgumentException($"Employee is not exist");
 
             data.EmployeeCode = employee.EmployeeCode;
             data.Department = employee.Department;
