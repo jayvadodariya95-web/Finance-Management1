@@ -13,7 +13,7 @@ public class Employee : BaseEntity
     public int? PreviousCTC { get; set; }
     public int CurrentCTC { get; set; }
     public DateTime JoinDate { get; set; }
-    public DateTime RelievingDate { get; set; }
+    public DateTime? RelievingDate { get; set; } 
     public int TakenLeave { get; set; }
     public bool IsActive { get; set; } = true;
 

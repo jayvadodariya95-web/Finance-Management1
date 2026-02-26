@@ -1,4 +1,5 @@
 using FinanceManagement.Application.DTOs;
+using FinanceManagement.Domain.Entities;
 
 namespace FinanceManagement.Application.Interfaces;
 
@@ -32,6 +33,15 @@ public interface INotificationService
     Task SendEmailAsync(string to, string subject, string body);
     Task NotifySettlementCompletedAsync(int partnerId, decimal amount);
     Task NotifyPaymentReceivedAsync(int projectId, decimal amount);
+}
+
+public interface IEmployeeServices
+{
+    Task<IEnumerable<GetAllEmployeeDto?>> GetAllAsync();
+    Task<GetAllEmployeeDto> GetByIdAsync(int id);
+    Task<EmployeeCreateDto> CreateAsync(EmployeeCreateDto dto);
+    Task<EmployeeUpdateDto> UpdateAsync(EmployeeUpdateDto dto, int id);
+    Task<GetAllEmployeeDto> DeleteAsync(int id);
 }
 
 // BUG: Missing proper error handling interfaces

@@ -56,6 +56,51 @@ public class EmployeeDto
     public DateTime JoinDate { get; set; }
     public bool IsActive { get; set; }
 }
+public class EmployeeCreateDto
+{
+    public int UserId { get; set; }
+    public int BranchId { get; set; }
+    public string EmployeeCode { get; set; } = string.Empty;
+    public string Department { get; set; } = string.Empty;
+    public string Position { get; set; } = string.Empty;
+    public int MonthlySalary { get; set; }
+    public int? PreviousCTC { get; set; }
+    public int CurrentCTC { get; set; }
+    public DateTime JoinDate { get; set; }
+    public int TakenLeave { get; set; }
+    public bool IsActive { get; set; } = true;
+}
+
+public class GetAllEmployeeDto
+{
+    public int Id { get; set; }
+    public int UserId { get; set; }
+    public int BranchId { get; set; }
+    public string EmployeeCode { get; set; } = string.Empty;
+    public string Department { get; set; } = string.Empty;
+    public string Position { get; set; } = string.Empty;
+    public int MonthlySalary { get; set; }
+    public int? PreviousCTC { get; set; }
+    public int CurrentCTC { get; set; }
+    public DateTime JoinDate { get; set; }
+    public DateTime? RelievingDate { get; set; } 
+    public int TakenLeave { get; set; }
+    public bool IsActive { get; set; } = true;
+}
+
+public class EmployeeUpdateDto
+{
+    public string EmployeeCode { get; set; } = string.Empty;
+    public string Department { get; set; } = string.Empty;
+    public string Position { get; set; } = string.Empty;
+    public int MonthlySalary { get; set; }
+    public int? PreviousCTC { get; set; }
+    public int CurrentCTC { get; set; }
+    public DateTime JoinDate { get; set; }
+    public DateTime? RelievingDate { get; set; }
+    public int TakenLeave { get; set; }
+    public bool IsActive { get; set; } = true;
+}
 
 // BUG: Missing validation attributes
 // BUG: Exposing sensitive data like salary in basic DTO

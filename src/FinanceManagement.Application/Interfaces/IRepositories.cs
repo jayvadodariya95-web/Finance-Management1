@@ -34,11 +34,11 @@ public interface IProjectRepository
 
 public interface IEmployeeRepository
 {
+    Task<List<Employee>> GetAllAsync();
     Task<Employee?> GetByIdAsync(int id);
-    Task<IEnumerable<Employee>> GetAllAsync();
     Task<Employee> CreateAsync(Employee employee);
-    Task<Employee> UpdateAsync(Employee employee);
-    Task<IEnumerable<Project>> GetEmployeeProjectsAsync(int employeeId);
+    Task<Employee> UpdateAsync(Employee employee,int id);
+    Task<Employee> DeleteAsync(Employee employee,int id);
 }
 
 public interface IBankTransactionRepository
