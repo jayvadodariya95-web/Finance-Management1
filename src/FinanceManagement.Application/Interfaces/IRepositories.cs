@@ -1,3 +1,4 @@
+using FinanceManagement.Application.DTOs;
 using FinanceManagement.Domain.Entities;
 
 namespace FinanceManagement.Application.Interfaces;
@@ -14,12 +15,12 @@ public interface IUserRepository
 
 public interface IPartnerRepository
 {
-    Task<Partner?> GetByIdAsync(int id);
     Task<IEnumerable<Partner>> GetAllAsync();
+    Task<Partner?> GetByIdAsync(int id);
+    Task AddAsync(Partner partner);
+    Task UpdateAsync(Partner partner);
+    Task SoftDeleteAsync(Partner partner);
     Task<IEnumerable<Partner>> GetMainPartnersAsync();
-    Task<Partner> CreateAsync(Partner partner);
-    Task<Partner> UpdateAsync(Partner partner);
-    Task<IEnumerable<Project>> GetPartnerProjectsAsync(int partnerId);
 }
 
 public interface IProjectRepository

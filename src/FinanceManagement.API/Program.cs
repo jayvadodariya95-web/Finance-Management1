@@ -31,7 +31,7 @@ builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
 builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
 builder.Services.AddScoped<IBankTransactionRepository, BankTransactionRepository>();
 builder.Services.AddScoped<IFinancialRepository, FinancialRepository>();
-
+builder.Services.AddScoped<IPartnerService, PartnerService>();
 builder.Services.AddScoped<IFinancialService, FinancialService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 

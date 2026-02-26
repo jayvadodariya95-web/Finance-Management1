@@ -34,6 +34,15 @@ public interface INotificationService
     Task NotifyPaymentReceivedAsync(int projectId, decimal amount);
 }
 
+public interface IPartnerService
+{
+    Task<IEnumerable<PartnerResponseDto>> GetAllAsync();
+    Task<PartnerResponseDto?> GetByIdAsync(int id);
+    Task<int> CreateAsync(CreatePartnerDto dto);
+    Task<bool> UpdateAsync(int id, UpdatePartnerDto dto);
+    Task<bool> DeleteAsync(int id);
+}
+
 // BUG: Missing proper error handling interfaces
 // BUG: No logging interfaces defined
 // BUG: Service methods lack proper validation

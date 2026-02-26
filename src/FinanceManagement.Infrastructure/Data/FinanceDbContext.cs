@@ -24,6 +24,8 @@ public class FinanceDbContext : DbContext
     public DbSet<DocType> DocTypes { get; set; }
     public DbSet<Documents> Documents { get; set; }
     public DbSet<EmployeeDocument> EmployeeDocuments { get; set; }
+    public DbSet<Revenue> Revenues { get; set; }
+    public DbSet<Asset> Assets { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -272,6 +274,31 @@ public class FinanceDbContext : DbContext
             entity.HasIndex(d => d.DocType_Id);
         });
 
+        // Revenue Configuration
+        modelBuilder.Entity<Revenue>(entity =>
+        {
+            entity.ToTable("Revenues");
+            entity.HasKey(r => r.Id);
+            entity.Property(r => r.Amount)
+                  .HasColumnType("decimal(18,2)")
+                  .IsRequired();
+            entity.Property(r => r.Date)
+                  .IsRequired();
+            entity.Property(r => r.Revenue_From)
+                  .HasDefaultValue(true);
+            entity.Property(r => r.Notes)
+                  .HasMaxLength(500);
+            // Relationship: Revenue → Partner (Required)
+            entity.HasOne(r => r.Partner)
+                  .WithMany()
+                  .HasForeignKey(r => r.PartnerId)
+                  .OnDelete(DeleteBehavior.Restrict);
+            // Relationship: Revenue → Project (Optional)
+            entity.HasOne(r => r.Project)
+                  .WithMany()
+                  .HasForeignKey(r => r.ProjectId)
+                  .OnDelete(DeleteBehavior.SetNull);
+        });
         //Renvenue to Project one-to-one configuration
         modelBuilder.Entity<Revenue>(entity =>
         {
