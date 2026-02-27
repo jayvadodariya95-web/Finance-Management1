@@ -19,7 +19,7 @@ public interface IPartnerRepository
     Task<Partner?> GetByIdAsync(int id);
     Task AddAsync(Partner partner);
     Task UpdateAsync(Partner partner);
-    Task SoftDeleteAsync(Partner partner);
+    Task DeleteAsync(Partner partner);
     Task<IEnumerable<Partner>> GetMainPartnersAsync();
 }
 

@@ -24,7 +24,7 @@ namespace FinanceManagement.Infrastructure.Repositories
             return await _context.Partners
                 .Include(p => p.User)
                 .Include(p => p.Branch)
-                .Where(p=> p.IsDeleted == false)
+                .Where(p => p.IsDeleted == false)
                 .ToListAsync();
         }
 
@@ -33,7 +33,7 @@ namespace FinanceManagement.Infrastructure.Repositories
             return await _context.Partners
                 .Include(p => p.User)
                 .Include(p => p.Branch)
-                .FirstOrDefaultAsync(p => p.Id == id && p.IsDeleted==false);
+                .FirstOrDefaultAsync(p => p.Id == id && p.IsDeleted == false);
         }
 
         public async Task AddAsync(Partner partner)
@@ -60,11 +60,7 @@ namespace FinanceManagement.Infrastructure.Repositories
                 .Include(p => p.Branch)
                 .Where(p => p.IsMainPartner)
                 .ToListAsync();
-        }
+        } 
 
-        public Task SoftDeleteAsync(Partner partner)
-        {
-            throw new NotImplementedException();
-        }
     }
 }
