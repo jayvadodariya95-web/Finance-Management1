@@ -1,3 +1,5 @@
+﻿using FinanceManagement.Domain.Enums;
+
 namespace FinanceManagement.Application.DTOs;
 
 public class UserDto
@@ -41,9 +43,44 @@ public class ProjectDto
     public DateTime? EndDate { get; set; }
     public string Status { get; set; } = string.Empty;
     public string ManagedByPartner { get; set; } = string.Empty;
-    public List<EmployeeDto> AssignedEmployees { get; set; } = new();
-}
+    public string? TechnologyStack { get; set; }
+    public string? ManagerName { get; set; }
+    public string? ManagerEmail { get; set; }
+    public string? ManagerContact { get; set; }
+    public string? ClientManagerName { get; set; }
+    public string? LeaveApplyWay { get; set; }
+    public string? ClientManagerEmail { get; set; }
+    public string? ClientManagerContact { get; set; }
+    public bool IsSmooth { get; set; }
+    public string? MobileNumberUsed { get; set; }
+    public bool? IsToolUsed { get; set; }
+    public string? ProfileName { get; set; }
+    public string? InterviewingUserName { get; set; }
 
+}
+public class CreateProjectDto
+{
+    public string Name { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public string ClientName { get; set; } = string.Empty;
+    public decimal ProjectValue { get; set; }
+    public DateTime StartDate { get; set; }
+    public DateTime? EndDate { get; set; }
+    public int ManagedByPartnerId { get; set; }
+    public int? ProfileId { get; set; }
+    public string? TechnologyStack { get; set; }
+    public string? ManagerName { get; set; }
+    public string? ManagerEmail { get; set; }
+    public string? ManagerContact { get; set; }
+    public string? LeaveApplyWay { get; set; }
+    public string? ClientManagerName { get; set; }
+    public string? ClientManagerEmail { get; set; }
+    public string? ClientManagerContact { get; set; }
+    public bool IsSmooth { get; set; }
+    public string? MobileNumberUsed { get; set; }
+    public int? InterviewingUserId { get; set; }
+    public bool? IsToolUsed { get; set; }
+}
 public class EmployeeDto
 {
     public int Id { get; set; }

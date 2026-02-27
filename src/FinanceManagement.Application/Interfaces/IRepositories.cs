@@ -26,10 +26,9 @@ public interface IProjectRepository
 {
     Task<Project?> GetByIdAsync(int id);
     Task<IEnumerable<Project>> GetAllAsync();
-    Task<IEnumerable<Project>> GetByPartnerAsync(int partnerId);
     Task<Project> CreateAsync(Project project);
-    Task<Project> UpdateAsync(Project project);
-    Task AssignEmployeeAsync(int projectId, int employeeId, string? role = null);
+    Task<Project> UpdateAsync(Project project,int id);
+    Task<bool> DeleteAsync(int id);
 }
 
 public interface IEmployeeRepository

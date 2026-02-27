@@ -1,10 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 using FinanceManagement.Application.Common;
 using FinanceManagement.Application.Interfaces;
 using FinanceManagement.Application.DTOs;
-using FinanceManagement.Domain.Entities;
 using FinanceManagement.Domain.Enums;
+using Microsoft.AspNetCore.Authorization;
 
 namespace FinanceManagement.API.Controllers;
 
@@ -13,193 +12,68 @@ namespace FinanceManagement.API.Controllers;
 [Authorize]
 public class ProjectsController : ControllerBase
 {
+    private readonly IProjectService projectService;
     private readonly IProjectRepository _projectRepository;
     private readonly IPartnerRepository _partnerRepository;
     private readonly IEmployeeRepository _employeeRepository;
+    private readonly IProjectService _projectService;
     private readonly ILogger<ProjectsController> _logger;
+    private ProjectDto projectDto;
 
-    public ProjectsController(
-        IProjectRepository projectRepository,
-        IPartnerRepository partnerRepository,
-        IEmployeeRepository employeeRepository,
-        ILogger<ProjectsController> logger)
+    public ProjectsController( IProjectService projectService)
     {
-        _projectRepository = projectRepository;
-        _partnerRepository = partnerRepository;
-        _employeeRepository = employeeRepository;
-        _logger = logger;
+        this._projectService = projectService;
     }
-
+ 
     [HttpGet]
-    public async Task<ActionResult<ApiResponse<IEnumerable<ProjectDto>>>> GetAllProjects()
+    public async Task<IActionResult> GetAll()
     {
-        try
-        {
-            var projects = await _projectRepository.GetAllAsync();
-            var projectDtos = new List<ProjectDto>();
-            
-            foreach (var project in projects)
-            {
-                var partner = await _partnerRepository.GetByIdAsync(project.ManagedByPartnerId);
-                
-                var projectDto = new ProjectDto
-                {
-                    Id = project.Id,
-                    Name = project.Name,
-                    ClientName = project.ClientName,
-                    ProjectValue = project.ProjectValue,
-                    StartDate = project.StartDate,
-                    EndDate = project.EndDate,
-                    Status = project.Status.ToString(),
-                    ManagedByPartner = $"{partner.User.FirstName} {partner.User.LastName}"
-                };
-                
-                projectDtos.Add(projectDto);
-            }
-
-            return Ok(ApiResponse<IEnumerable<ProjectDto>>.SuccessResult(projectDtos));
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error retrieving projects");
-            return StatusCode(500, ApiResponse<IEnumerable<ProjectDto>>.ErrorResult("Failed to retrieve projects"));
-        }
+        var projects = await _projectService.GetAllProjectsAsync();
+        return Ok(projects);
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<ApiResponse<ProjectDto>>> GetProject(int id)
+    public async Task<ActionResult<ApiResponse<ProjectDto>>> GetProjectbyid(int id)
     {
-        try
-        {
-            var project = await _projectRepository.GetByIdAsync(id);
-            
-            if (project == null)
-            {
-                return NotFound(ApiResponse<ProjectDto>.ErrorResult("Project not found"));
-            }
-            
-            var partner = await _partnerRepository.GetByIdAsync(project.ManagedByPartnerId);
-            
-            var projectDto = new ProjectDto
-            {
-                Id = project.Id,
-                Name = project.Name,
-                ClientName = project.ClientName,
-                ProjectValue = project.ProjectValue,
-                StartDate = project.StartDate,
-                EndDate = project.EndDate,
-                Status = project.Status.ToString(),
-                ManagedByPartner = $"{partner.User.FirstName} {partner.User.LastName}"
-            };
-
-            return Ok(ApiResponse<ProjectDto>.SuccessResult(projectDto));
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error retrieving project {ProjectId}", id);
-            return StatusCode(500, ApiResponse<ProjectDto>.ErrorResult("Failed to retrieve project"));
-        }
+      var projectDto = await _projectService.GetProjectByIdAsync(id);
+      if (projectDto == null)
+       {
+          return NotFound(ApiResponse<ProjectDto>.ErrorResult("Project not found"));
+       }
+          return Ok(ApiResponse<ProjectDto>.SuccessResult(projectDto));   
     }
 
     [HttpPost]
     public async Task<ActionResult<ApiResponse<ProjectDto>>> CreateProject([FromBody] CreateProjectDto request)
     {
-        try
-        {
-            var project = new Project
-            {
-                Name = request.Name,
-                Description = request.Description,
-                ClientName = request.ClientName,
-                ProjectValue = request.ProjectValue,
-                StartDate = request.StartDate,
-                EndDate = request.EndDate,
-                Status = ProjectStatus.Active,
-                ManagedByPartnerId = request.ManagedByPartnerId
-            };
-
-            var createdProject = await _projectRepository.CreateAsync(project);
-            var partner = await _partnerRepository.GetByIdAsync(createdProject.ManagedByPartnerId);
-            
-            var projectDto = new ProjectDto
-            {
-                Id = createdProject.Id,
-                Name = createdProject.Name,
-                ClientName = createdProject.ClientName,
-                ProjectValue = createdProject.ProjectValue,
-                StartDate = createdProject.StartDate,
-                EndDate = createdProject.EndDate,
-                Status = createdProject.Status.ToString(),
-                ManagedByPartner = $"{partner.User.FirstName} {partner.User.LastName}"
-            };
-
-            return CreatedAtAction(nameof(GetProject), new { id = createdProject.Id }, 
-                ApiResponse<ProjectDto>.SuccessResult(projectDto, "Project created successfully"));
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error creating project");
-            return StatusCode(500, ApiResponse<ProjectDto>.ErrorResult("Failed to create project"));
-        }
+      var result = await _projectService.CreateProjectAsync(request);
+      return Ok(ApiResponse<ProjectDto>.SuccessResult(result, "Project created successfully"));
     }
 
-    [HttpPost("{id}/assign-employee")]
-    public async Task<ActionResult<ApiResponse<string>>> AssignEmployee(int id, [FromBody] AssignEmployeeDto request)
+    [HttpPut("{id}")]
+    public async Task<ActionResult<ApiResponse<ProjectDto>>> UpdateProject(int id, [FromBody] CreateProjectDto request)
     {
-        try
+  
         {
-            await _projectRepository.AssignEmployeeAsync(id, request.EmployeeId, request.Role);
-            return Ok(ApiResponse<string>.SuccessResult("Employee assigned successfully"));
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error assigning employee to project");
-            return StatusCode(500, ApiResponse<string>.ErrorResult("Failed to assign employee"));
-        }
-    }
-
-    [HttpGet("partner/{partnerId}")]
-    public async Task<ActionResult<ApiResponse<IEnumerable<ProjectDto>>>> GetProjectsByPartner(int partnerId)
-    {
-        try
-        {
-            var projects = await _projectRepository.GetByPartnerAsync(partnerId);
-            
-            var projectDtos = projects.Select(p => new ProjectDto
+            var updateproject = await _projectService.UpdateProjectAsync(id, request);
+            if (updateproject == null)
             {
-                Id = p.Id,
-                Name = p.Name,
-                ClientName = p.ClientName,
-                ProjectValue = p.ProjectValue,
-                StartDate = p.StartDate,
-                EndDate = p.EndDate,
-                Status = p.Status.ToString(),
-                ManagedByPartner = "Current Partner"
-            });
-
-            return Ok(ApiResponse<IEnumerable<ProjectDto>>.SuccessResult(projectDtos));
+                return NotFound(ApiResponse<ProjectDto>.ErrorResult("Record Not Found On this Id"));
+            }
+            return Ok(ApiResponse<ProjectDto>.SuccessResult(updateproject, "project update successfully"));
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error retrieving projects for partner {PartnerId}", partnerId);
-            return StatusCode(500, ApiResponse<IEnumerable<ProjectDto>>.ErrorResult("Failed to retrieve partner projects"));
-        }
+      
     }
-}
 
-public class CreateProjectDto
-{
-    public string Name { get; set; } = string.Empty;
-    public string? Description { get; set; }
-    public string ClientName { get; set; } = string.Empty;
-    public decimal ProjectValue { get; set; }
-    public DateTime StartDate { get; set; }
-    public DateTime? EndDate { get; set; }
-    public int ManagedByPartnerId { get; set; }
-}
+    [HttpDelete("{id}")]
+    public async Task<ActionResult<ApiResponse<ProjectDto>>> DeleteProject(int id)
+    { 
+            var deleteproject = await _projectService.DeleteProjectAsync(id);
+            if(!deleteproject)
+            {
+                return NotFound(ApiResponse<ProjectDto>.ErrorResult("Project Not Found "));
+            }
+            return Ok(ApiResponse<ProjectDto>.SuccessResult("project is deleted"));  
+    }
 
-public class AssignEmployeeDto
-{
-    public int EmployeeId { get; set; }
-    public string? Role { get; set; }
 }
