@@ -73,7 +73,8 @@ namespace FinanceManagement.Infrastructure.Services
         public async Task<bool> UpdateAsync(int id, UpdatePartnerDto dto)
         {
             var partner = await _repository.GetByIdAsync(id);
-            if (partner == null) return false;
+            if (partner == null || partner.IsDeleted)
+                return false;
 
             partner.PartnershipType = dto.PartnershipType;
             partner.SharePercentage = dto.SharePercentage;

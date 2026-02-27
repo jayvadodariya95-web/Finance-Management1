@@ -1,8 +1,10 @@
 ﻿using FinanceManagement.Application.Common;
 using FinanceManagement.Application.DTOs;
 using FinanceManagement.Application.Interfaces;
+using FinanceManagement.Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace FinanceManagement.API.Controllers
 {
@@ -54,12 +56,28 @@ namespace FinanceManagement.API.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult<ApiResponse<string>>> Update(int id, UpdatePartnerDto dto)
         {
-            await _service.UpdateAsync(id, dto);
+            var result = await _service.UpdateAsync(id, dto);
 
-            return Ok(ApiResponse<string>
-                .SuccessResult(null, "Partner updated successfully."));
+            if (!result)
+            {
+                return NotFound(
+                    ApiResponse<string>.ErrorResult("Partner not found or already deleted.")
+                );
+            }
+
+            return Ok(
+                ApiResponse<string>.SuccessResult(null, "Partner updated successfully.")
+            );
         }
 
-       
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<ApiResponse<string>>> Delete(int id)
+        {
+            await _service.DeleteAsync(id);
+
+            return Ok(ApiResponse<string>
+                .SuccessResult(null, "Partner deleted successfully."));
+        }
+
     }
 }
