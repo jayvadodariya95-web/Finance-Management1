@@ -40,9 +40,9 @@ public interface IEmployeeServices
 {
     Task<ApiResponse<IEnumerable<GetAllEmployeeDto?>>> GetAllAsync();
     Task<ApiResponse<GetAllEmployeeDto>> GetByIdAsync(int id);
-    Task<ApiResponse<EmployeeCreateDto>> CreateAsync(EmployeeCreateDto dto);
-    Task<ApiResponse<EmployeeUpdateDto>> UpdateAsync(EmployeeUpdateDto dto, int id);
-    Task<ApiResponse<GetAllEmployeeDto>> DeleteAsync(int id);
+    Task<ApiResponse<EmployeeCreateDto>> CreateAsync(EmployeeCreateDto employeeCreateDto);
+    Task<ApiResponse<EmployeeUpdateDto>> UpdateAsync(EmployeeUpdateDto employeeUpdateDto, int id);
+    Task<ApiResponse<Employee>> DeleteAsync(int id);
 }
 
 // BUG: Missing proper error handling interfaces

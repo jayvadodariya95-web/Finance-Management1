@@ -27,9 +27,9 @@ namespace FinanceManagement.Infrastructure.Services
             var response = new ApiResponse<IEnumerable<GetAllEmployeeDto>>();
             try
             {
-                var data = await repository.GetAllAsync();
+                var employees = await repository.GetAllAsync();
 
-                var result = data.Select(e => new GetAllEmployeeDto
+                var employeeDtos = employees.Select(e => new GetAllEmployeeDto
                 {
                     Id = e.Id,
                     UserId = e.UserId,
@@ -46,7 +46,7 @@ namespace FinanceManagement.Infrastructure.Services
                     IsActive = e.IsActive
                 });
 
-                response.Data = result;
+                response.Data = employeeDtos;
                 response.Message = "Employees fetched successfully";
                 response.Success = true;
             }
@@ -65,32 +65,32 @@ namespace FinanceManagement.Infrastructure.Services
             var response = new ApiResponse<GetAllEmployeeDto>();
             try
             {
-                var data = await repository.GetByIdAsync(id);
-                if (data == null)
+                var employee = await repository.GetByIdAsync(id);
+                if (employee == null)
                 {
-                    response.Message = "Employee is not exist";
+                    response.Message = "Employee does not exist";
                     response.Success = false;
                     return response;
                 }
 
-                var result = new GetAllEmployeeDto
+                var employeeDto = new GetAllEmployeeDto
                 {
-                    Id = data.Id,
-                    UserId = data.UserId,
-                    BranchId = data.BranchId,
-                    EmployeeCode = data.EmployeeCode,
-                    Department = data.Department,
-                    Position = data.Position,
-                    MonthlySalary = data.MonthlySalary,
-                    PreviousCTC = data.PreviousCTC,
-                    CurrentCTC = data.CurrentCTC,
-                    JoinDate = data.JoinDate,
-                    RelievingDate = data.RelievingDate,
-                    TakenLeave = data.TakenLeave,
-                    IsActive = data.IsActive
+                    Id = employee.Id,
+                    UserId = employee.UserId,
+                    BranchId = employee.BranchId,
+                    EmployeeCode = employee.EmployeeCode,
+                    Department = employee.Department,
+                    Position = employee.Position,
+                    MonthlySalary = employee.MonthlySalary,
+                    PreviousCTC = employee.PreviousCTC,
+                    CurrentCTC = employee.CurrentCTC,
+                    JoinDate = employee.JoinDate,
+                    RelievingDate = employee.RelievingDate,
+                    TakenLeave = employee.TakenLeave,
+                    IsActive = employee.IsActive
                 };
 
-                response.Data = result;
+                response.Data = employeeDto;
                 response.Message = "Employees fetched successfully";
                 response.Success = true;
                 return response;
@@ -104,135 +104,128 @@ namespace FinanceManagement.Infrastructure.Services
             }
 
         }
-        public async Task<ApiResponse<EmployeeCreateDto>> CreateAsync(EmployeeCreateDto dto)
+        public async Task<ApiResponse<EmployeeCreateDto>> CreateAsync(EmployeeCreateDto employeeCreateDto)
         {
             var response = new ApiResponse<EmployeeCreateDto>();
             try
             {
-                var employeeModel = new Employee
+                var employeeEntity = new Employee
                 {
-                    UserId = dto.UserId,
-                    BranchId = dto.BranchId,
-                    EmployeeCode = dto.EmployeeCode,
-                    Department = dto.Department,
-                    Position = dto.Position,
-                    MonthlySalary = dto.MonthlySalary,
-                    PreviousCTC = dto.PreviousCTC,
-                    CurrentCTC = dto.CurrentCTC,
-                    JoinDate = dto.JoinDate,
-                    TakenLeave = dto.TakenLeave,
-                    IsActive = dto.IsActive
+                    UserId = employeeCreateDto.UserId,
+                    BranchId = employeeCreateDto.BranchId,
+                    EmployeeCode = employeeCreateDto.EmployeeCode,
+                    Department = employeeCreateDto.Department,
+                    Position = employeeCreateDto.Position,
+                    MonthlySalary = employeeCreateDto.MonthlySalary,
+                    PreviousCTC = employeeCreateDto.PreviousCTC,
+                    CurrentCTC = employeeCreateDto.CurrentCTC,
+                    JoinDate = employeeCreateDto.JoinDate,
+                    TakenLeave = employeeCreateDto.TakenLeave,
+                    IsActive = employeeCreateDto.IsActive
                 };
 
-                var data = await repository.CreateAsync(employeeModel);
+                var createdEmployee = await repository.CreateAsync(employeeEntity);
 
-                var newDTO = new EmployeeCreateDto
+                var employeeDto = new EmployeeCreateDto
                 {
-                    UserId = data.UserId,
-                    BranchId = data.BranchId,
-                    EmployeeCode = data.EmployeeCode,
-                    Department = data.Department,
-                    Position = data.Position,
-                    MonthlySalary = data.MonthlySalary,
-                    PreviousCTC = data.PreviousCTC,
-                    CurrentCTC = data.CurrentCTC,
-                    JoinDate = data.JoinDate,
-                    TakenLeave = data.TakenLeave,
-                    IsActive = data.IsActive
+                    UserId = createdEmployee.UserId,
+                    BranchId = createdEmployee.BranchId,
+                    EmployeeCode = createdEmployee.EmployeeCode,
+                    Department = createdEmployee.Department,
+                    Position = createdEmployee.Position,
+                    MonthlySalary = createdEmployee.MonthlySalary,
+                    PreviousCTC = createdEmployee.PreviousCTC,
+                    CurrentCTC = createdEmployee.CurrentCTC,
+                    JoinDate = createdEmployee.JoinDate,
+                    TakenLeave = createdEmployee.TakenLeave,
+                    IsActive = createdEmployee.IsActive
                 };
-                response.Data = newDTO;
+                response.Data = employeeDto;
                 response.Message = "Employee created successfully";
                 response.Success = true;
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
                 response.Data = null;
-                response.Message = e.Message;
+                response.Message = ex.Message;
                 response.Success = false;
             }
 
             return response;
         }
-        public async Task<ApiResponse<EmployeeUpdateDto>> UpdateAsync(EmployeeUpdateDto dto, int id)
+        public async Task<ApiResponse<EmployeeUpdateDto>> UpdateAsync(EmployeeUpdateDto employeeUpdateDto, int id)
         {
             var response = new ApiResponse<EmployeeUpdateDto>();
             try
             {
-                var employee = await repository.GetByIdAsync(id);
+                var employeeId = await repository.GetByIdAsync(id);
                 
-                if (employee == null || employee.IsDeleted)
+                if (employeeId == null || employeeId.IsDeleted)
                 {
                     response.Success = false;
                     response.Message = "Employee not found";
                     return response;
                 }
 
-                var employeedto = new Employee
+                var employeeEntity = new Employee
                 {
-                    EmployeeCode = dto.EmployeeCode,
-                    Department = dto.Department,
-                    Position = dto.Position,
-                    MonthlySalary = dto.MonthlySalary,
-                    PreviousCTC = dto.PreviousCTC,
-                    CurrentCTC = dto.CurrentCTC,
-                    JoinDate = dto.JoinDate,
-                    RelievingDate = dto.RelievingDate,
-                    TakenLeave = dto.TakenLeave,
-                    IsActive = dto.IsActive
+                    EmployeeCode = employeeUpdateDto.EmployeeCode,
+                    Department = employeeUpdateDto.Department,
+                    Position = employeeUpdateDto.Position,
+                    MonthlySalary = employeeUpdateDto.MonthlySalary,
+                    PreviousCTC = employeeUpdateDto.PreviousCTC,
+                    CurrentCTC = employeeUpdateDto.CurrentCTC,
+                    JoinDate = employeeUpdateDto.JoinDate,
+                    RelievingDate = employeeUpdateDto.RelievingDate,
+                    TakenLeave = employeeUpdateDto.TakenLeave,
+                    IsActive = employeeUpdateDto.IsActive
                 };
 
-                var data = await repository.UpdateAsync(employeedto, id);
+                var updateEmployee = await repository.UpdateAsync(employeeEntity, id);
 
-                var newDto = new EmployeeUpdateDto
+                var employeeDto = new EmployeeUpdateDto
                 {
-                    EmployeeCode = data.EmployeeCode,
-                    Department = data.Department,
-                    Position = data.Position,
-                    MonthlySalary = data.MonthlySalary,
-                    PreviousCTC = data.PreviousCTC,
-                    CurrentCTC = data.CurrentCTC,
-                    JoinDate = data.JoinDate,
-                    RelievingDate = data.RelievingDate,
-                    TakenLeave = data.TakenLeave,
-                    IsActive = data.IsActive
+                    EmployeeCode = updateEmployee.EmployeeCode,
+                    Department = updateEmployee.Department,
+                    Position = updateEmployee.Position,
+                    MonthlySalary = updateEmployee.MonthlySalary,
+                    PreviousCTC = updateEmployee.PreviousCTC,
+                    CurrentCTC = updateEmployee.CurrentCTC,
+                    JoinDate = updateEmployee.JoinDate,
+                    RelievingDate = updateEmployee.RelievingDate,
+                    TakenLeave = updateEmployee.TakenLeave,
+                    IsActive = updateEmployee.IsActive
                 };
 
-                response.Data = newDto;
+                response.Data = employeeDto;
                 response.Message = "Record successfully updated";
                 response.Success = true;
                 return response;
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
                 response.Data = null;
-                response.Message = e.Message;
+                response.Message = ex.Message;
                 response.Success = false;
                 return response;
             }
         }
 
-        public async Task<ApiResponse<GetAllEmployeeDto>> DeleteAsync(int id)
+        public async Task<ApiResponse<Employee>> DeleteAsync(int id)
         {
-            var response = new ApiResponse<GetAllEmployeeDto>();
+            var response = new ApiResponse<Employee>();
 
             try
             {
-                var data = await repository.GetByIdAsync(id);
-                if (data == null)
+                var employeeData = await repository.GetByIdAsync(id);
+                if (employeeData == null || employeeData.IsDeleted)
                 {
                     response.Success = false;
                     response.Message = "Employee not found";
                     return response;
                 }
 
-                if (data.IsDeleted)
-                {
-                    response.Success = false;
-                    response.Message = "Employee is not exist";
-                    return response;
-                }
-
-                await repository.DeleteAsync(data, id);
+                await repository.DeleteAsync(employeeData, id);
 
                 response.Success = true;
                 response.Message = "Employee deleted successfully";

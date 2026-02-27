@@ -33,16 +33,16 @@ namespace FinanceManagement.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] EmployeeCreateDto dto)
+        public async Task<IActionResult> Create([FromBody] EmployeeCreateDto employeeCreateDto)
         {
-            var data = await services.CreateAsync(dto);
+            var data = await services.CreateAsync(employeeCreateDto);
             return Ok(data);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateEmployee([FromBody] EmployeeUpdateDto dto, int id)
+        public async Task<IActionResult> UpdateEmployee([FromBody] EmployeeUpdateDto employeeUpdateDto, int id)
         {
-            var data = await services.UpdateAsync(dto, id);
+            var data = await services.UpdateAsync(employeeUpdateDto, id);
             return Ok(data);
         }
 
