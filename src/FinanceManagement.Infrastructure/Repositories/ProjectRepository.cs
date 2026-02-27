@@ -16,29 +16,23 @@ public class ProjectRepository : IProjectRepository
 
     public async Task<Project?> GetByIdAsync(int id)
     {
-        return await _context.Projects.FirstOrDefaultAsync(p => p.Id == id);
+        return await _context.Projects
+              .Include(p => p.ManagedByPartner)
+                  .ThenInclude(part => part.User)
+              .Include(p => p.ProjectEmployees)
+                  .ThenInclude(pe => pe.Employee)
+                      .ThenInclude(e => e.User)
+              .FirstOrDefaultAsync(p => p.Id == id && p.IsDeleted==false);
     }
 
     public async Task<IEnumerable<Project>> GetAllAsync()
     {
-        var projects = await _context.Projects.ToListAsync();
-        
-        foreach (var project in projects)
-        {
-            project.ManagedByPartner = await _context.Partners
-                .FirstOrDefaultAsync(p => p.Id == project.ManagedByPartnerId);
-        }
-        
-        return projects;
-    }
-
-    public async Task<IEnumerable<Project>> GetByPartnerAsync(int partnerId)
-    {
         return await _context.Projects
-            .Where(p => p.ManagedByPartnerId == partnerId)
-            .ToListAsync();
+            .Where(p=> !p.IsDeleted)
+             .Include(p => p.ManagedByPartner)
+                 .ThenInclude(part => part.User)
+             .ToListAsync();
     }
-
     public async Task<Project> CreateAsync(Project project)
     {
         _context.Projects.Add(project);
@@ -46,91 +40,89 @@ public class ProjectRepository : IProjectRepository
         return project;
     }
 
-    public async Task<Project> UpdateAsync(Project project)
+    public async Task<Project> UpdateAsync(Project project, int id)
     {
-        _context.Projects.Update(project);
+        var data = await _context.Projects.Where(p => p.Id == id && !p.IsDeleted).FirstOrDefaultAsync();
+        if (data == null) return null;
+        _context.Projects.Update(data);
         await _context.SaveChangesAsync();
-        return project;
+        return data;
     }
-
-    public async Task AssignEmployeeAsync(int projectId, int employeeId, string? role = null)
+    public async Task<bool> DeleteAsync(int id)
     {
-        var assignment = new ProjectEmployee
+        var data = await _context.Projects.FindAsync(id);
+        if(data == null || data.IsDeleted)
         {
-            ProjectId = projectId,
-            EmployeeId = employeeId,
-            Role = role,
-            AssignedDate = DateTime.UtcNow,
-            IsActive = true
-        };
-
-        _context.ProjectEmployees.Add(assignment);
+            return false;
+        }
+        data.IsDeleted = true;
         await _context.SaveChangesAsync();
-    }
-}
-
-public class PartnerRepository : IPartnerRepository
-{
-    private readonly FinanceDbContext _context;
-
-    public PartnerRepository(FinanceDbContext context)
-    {
-        _context = context;
+        return true;
     }
 
-    public async Task<Partner?> GetByIdAsync(int id)
+    public class PartnerRepository : IPartnerRepository
     {
-        return await _context.Partners
-            .Include(p => p.User)
-            .FirstOrDefaultAsync(p => p.Id == id);
-    }
+        private readonly FinanceDbContext _context;
 
-    public async Task<IEnumerable<Partner>> GetAllAsync()
-    {
-        return await _context.Partners
-            .Include(p => p.User)
-            .ToListAsync();
-    }
-
-    public async Task<IEnumerable<Partner>> GetMainPartnersAsync()
-    {
-        return await _context.Partners
-            .Include(p => p.User)
-            .Where(p => p.IsMainPartner)
-            .ToListAsync();
-    }
-
-    public async Task<Partner> CreateAsync(Partner partner)
-    {
-        _context.Partners.Add(partner);
-        await _context.SaveChangesAsync();
-        return partner;
-    }
-
-    public async Task<Partner> UpdateAsync(Partner partner)
-    {
-        _context.Partners.Update(partner);
-        await _context.SaveChangesAsync();
-        return partner;
-    }
-
-    public async Task<IEnumerable<Project>> GetPartnerProjectsAsync(int partnerId)
-    {
-        var projects = await _context.Projects
-            .Where(p => p.ManagedByPartnerId == partnerId)
-            .ToListAsync();
-
-        foreach (var project in projects)
+        public PartnerRepository(FinanceDbContext context)
         {
-            var projectEmployees = await _context.ProjectEmployees
-                .Where(pe => pe.ProjectId == project.Id)
-                .Include(pe => pe.Employee)
-                .ThenInclude(e => e.User)
-                .ToListAsync();
-            
-            project.ProjectEmployees = projectEmployees;
+            _context = context;
         }
 
-        return projects;
+        public async Task<Partner?> GetByIdAsync(int id)
+        {
+            return await _context.Partners
+                .Include(p => p.User)
+                .FirstOrDefaultAsync(p => p.Id == id);
+        }
+
+        public async Task<IEnumerable<Partner>> GetAllAsync()
+        {
+            return await _context.Partners
+                .Include(p => p.User)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Partner>> GetMainPartnersAsync()
+        {
+            return await _context.Partners
+                .Include(p => p.User)
+                .Where(p => p.IsMainPartner)
+                .ToListAsync();
+        }
+
+        public async Task<Partner> CreateAsync(Partner partner)
+        {
+            _context.Partners.Add(partner);
+            await _context.SaveChangesAsync();
+            return partner;
+        }
+
+        public async Task<Partner> UpdateAsync(Partner partner)
+        {
+            _context.Partners.Update(partner);
+            await _context.SaveChangesAsync();
+            return partner;
+        }
+
+        public async Task<IEnumerable<Project>> GetPartnerProjectsAsync(int partnerId)
+        {
+            var projects = await _context.Projects
+                .Where(p => p.ManagedByPartnerId == partnerId)
+                .ToListAsync();
+
+            foreach (var project in projects)
+            {
+                var projectEmployees = await _context.ProjectEmployees
+                    .Where(pe => pe.ProjectId == project.Id)
+                    .Include(pe => pe.Employee)
+                    .ThenInclude(e => e.User)
+                    .ToListAsync();
+
+                project.ProjectEmployees = projectEmployees;
+            }
+
+            return projects;
+        }
     }
 }

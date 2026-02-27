@@ -8,6 +8,7 @@ using FinanceManagement.Application.Interfaces;
 using FinanceManagement.Infrastructure.Repositories;
 using FinanceManagement.Infrastructure.Services;
 using FinanceManagement.API.Middleware;
+using static FinanceManagement.Infrastructure.Repositories.ProjectRepository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +33,7 @@ builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
 builder.Services.AddScoped<IBankTransactionRepository, BankTransactionRepository>();
 builder.Services.AddScoped<IFinancialRepository, FinancialRepository>();
 
+builder.Services.AddScoped<IProjectService, ProjectService>();
 builder.Services.AddScoped<IFinancialService, FinancialService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
@@ -87,7 +89,7 @@ app.MapControllers();
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<FinanceDbContext>();
-    await context.Database.MigrateAsync();
+    //await context.Database.MigrateAsync();
     await SeedData(context);
 }
 

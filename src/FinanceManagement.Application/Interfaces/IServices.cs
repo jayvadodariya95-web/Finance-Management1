@@ -22,9 +22,9 @@ public interface IProjectService
 {
     Task<IEnumerable<ProjectDto>> GetAllProjectsAsync();
     Task<ProjectDto?> GetProjectByIdAsync(int id);
-    Task<ProjectDto> CreateProjectAsync(ProjectDto project);
-    Task AssignEmployeeToProjectAsync(int projectId, int employeeId);
-    Task<IEnumerable<ProjectDto>> GetProjectsByPartnerAsync(int partnerId);
+    Task<ProjectDto?> UpdateProjectAsync(int id, CreateProjectDto request);
+    Task<ProjectDto> CreateProjectAsync(CreateProjectDto request);
+    Task<bool> DeleteProjectAsync(int id);
 }
 
 public interface INotificationService
