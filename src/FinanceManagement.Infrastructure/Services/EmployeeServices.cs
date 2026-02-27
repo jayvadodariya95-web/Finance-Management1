@@ -125,7 +125,7 @@ namespace FinanceManagement.Infrastructure.Services
                 };
 
                 var data = await repository.CreateAsync(employeeModel);
-              
+
                 var newDTO = new EmployeeCreateDto
                 {
                     UserId = data.UserId,
@@ -232,7 +232,7 @@ namespace FinanceManagement.Infrastructure.Services
                     return response;
                 }
 
-                var employee = await repository.DeleteAsync(data, id);
+                await repository.DeleteAsync(data, id);
 
                 var dto = new GetAllEmployeeDto
                 {
@@ -249,7 +249,6 @@ namespace FinanceManagement.Infrastructure.Services
                     RelievingDate = data.RelievingDate,
                     TakenLeave = data.TakenLeave,
                     IsActive = data.IsActive
-
                 };
 
                 response.Data = dto;
