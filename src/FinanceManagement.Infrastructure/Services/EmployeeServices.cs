@@ -159,7 +159,7 @@ namespace FinanceManagement.Infrastructure.Services
             try
             {
                 var employee = await repository.GetByIdAsync(id);
-
+                
                 if (employee == null || employee.IsDeleted)
                 {
                     response.Success = false;
@@ -234,24 +234,6 @@ namespace FinanceManagement.Infrastructure.Services
 
                 await repository.DeleteAsync(data, id);
 
-                var dto = new GetAllEmployeeDto
-                {
-                    Id = data.Id,
-                    UserId = data.UserId,
-                    BranchId = data.BranchId,
-                    EmployeeCode = data.EmployeeCode,
-                    Department = data.Department,
-                    Position = data.Position,
-                    MonthlySalary = data.MonthlySalary,
-                    PreviousCTC = data.PreviousCTC,
-                    CurrentCTC = data.CurrentCTC,
-                    JoinDate = data.JoinDate,
-                    RelievingDate = data.RelievingDate,
-                    TakenLeave = data.TakenLeave,
-                    IsActive = data.IsActive
-                };
-
-                response.Data = dto;
                 response.Success = true;
                 response.Message = "Employee deleted successfully";
                 return response;

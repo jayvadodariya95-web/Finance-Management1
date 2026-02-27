@@ -66,9 +66,7 @@ namespace FinanceManagement.Infrastructure.Repositories
         public async Task<Employee> DeleteAsync(Employee employee, int id)
         {
             var data = await context.Employees.Where(e => e.Id == id).FirstOrDefaultAsync();
-            if (data == null)
-                return null;
-
+           
             data.IsDeleted = true;
 
             context.Employees.Update(data);
