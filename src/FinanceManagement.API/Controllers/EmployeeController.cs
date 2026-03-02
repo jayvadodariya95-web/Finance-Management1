@@ -33,7 +33,7 @@ namespace FinanceManagement.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] EmployeeCreateDto employeeCreateDto)
+        public async Task<IActionResult> AddEmployee([FromBody] EmployeeCreateDto employeeCreateDto)
         {
             var data = await services.CreateAsync(employeeCreateDto);
             return Ok(data);
@@ -47,7 +47,7 @@ namespace FinanceManagement.API.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> DeleteEmployee(int id)
         {
             var data = await services.DeleteAsync(id);
             return Ok(data);

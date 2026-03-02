@@ -38,7 +38,7 @@ namespace FinanceManagement.Infrastructure.Repositories
         }
         public async Task<Employee> CreateAsync(Employee employee)
         {
-            context.Employees.Add(employee);
+            await context.Employees.AddAsync(employee);
             await context.SaveChangesAsync();
             return employee;
         }
