@@ -48,11 +48,6 @@ namespace FinanceManagement.Infrastructure.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(Partner partner)
-        {
-            _context.Partners.Remove(partner);
-            await _context.SaveChangesAsync();
-        }
         public async Task<IEnumerable<Partner>> GetMainPartnersAsync()
         {
             return await _context.Partners

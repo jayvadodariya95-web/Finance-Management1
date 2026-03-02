@@ -19,7 +19,6 @@ public interface IPartnerRepository
     Task<Partner?> GetByIdAsync(int id);
     Task AddAsync(Partner partner);
     Task UpdateAsync(Partner partner);
-    Task DeleteAsync(Partner partner);
     Task<IEnumerable<Partner>> GetMainPartnersAsync();
 }
 
@@ -59,6 +58,15 @@ public interface IFinancialRepository
     Task<decimal> GetTotalSalariesAsync(int month, int year);
     Task<IEnumerable<MonthlyExpense>> GetMonthlyExpensesAsync(int month, int year);
     Task<decimal> GetPartnerIncomeAsync(int partnerId, int month, int year);
+}
+
+public interface IExpenseRepository
+{
+    Task<IEnumerable<MonthlyExpense>> GetAllAsync();
+    Task<MonthlyExpense?> GetByIdAsync(int id);
+    Task AddAsync(MonthlyExpense expense);
+    Task UpdateAsync(MonthlyExpense expense);
+    Task DeleteAsync(MonthlyExpense expense);
 }
 
 // BUG: Missing proper async patterns in some methods
