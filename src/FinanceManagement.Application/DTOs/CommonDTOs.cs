@@ -27,8 +27,36 @@ public class PartnerDto
     public string Email { get; set; } = string.Empty;
     public string PartnershipType { get; set; } = string.Empty;
     public decimal SharePercentage { get; set; }
-    public bool IsMainPartner { get; set; }
     public string? BranchName { get; set; }
+    public bool IsMainPartner { get; set; }
+}
+public class PartnerResponseDto
+{
+    public int Id { get; set; }
+    public int UserId { get; set; }
+    public string FullName { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string PartnershipType { get; set; } = string.Empty;
+    public decimal SharePercentage { get; set; }
+    public int? BranchId { get; set; }
+    public string? BranchName { get; set; }
+    public bool IsMainPartner { get; set; }
+}
+
+public class CreatePartnerDto
+{
+    public int UserId { get; set; }
+    public string PartnershipType { get; set; } = string.Empty;
+    public decimal SharePercentage { get; set; }
+    public int? BranchId { get; set; }
+    public bool IsMainPartner { get; set; }
+}
+public class UpdatePartnerDto
+{
+    public string PartnershipType { get; set; } = string.Empty;
+    public decimal SharePercentage { get; set; }
+    public int? BranchId { get; set; }
+    public bool IsMainPartner { get; set; }
 }
 
 public class ProjectDto

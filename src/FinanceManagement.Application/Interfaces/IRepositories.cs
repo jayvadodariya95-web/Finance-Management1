@@ -1,3 +1,4 @@
+using FinanceManagement.Application.DTOs;
 using FinanceManagement.Domain.Entities;
 
 namespace FinanceManagement.Application.Interfaces;
@@ -14,12 +15,11 @@ public interface IUserRepository
 
 public interface IPartnerRepository
 {
-    Task<Partner?> GetByIdAsync(int id);
     Task<IEnumerable<Partner>> GetAllAsync();
+    Task<Partner?> GetByIdAsync(int id);
+    Task AddAsync(Partner partner);
+    Task UpdateAsync(Partner partner);
     Task<IEnumerable<Partner>> GetMainPartnersAsync();
-    Task<Partner> CreateAsync(Partner partner);
-    Task<Partner> UpdateAsync(Partner partner);
-    Task<IEnumerable<Project>> GetPartnerProjectsAsync(int partnerId);
 }
 
 public interface IProjectRepository
@@ -58,6 +58,15 @@ public interface IFinancialRepository
     Task<decimal> GetTotalSalariesAsync(int month, int year);
     Task<IEnumerable<MonthlyExpense>> GetMonthlyExpensesAsync(int month, int year);
     Task<decimal> GetPartnerIncomeAsync(int partnerId, int month, int year);
+}
+
+public interface IExpenseRepository
+{
+    Task<IEnumerable<MonthlyExpense>> GetAllAsync();
+    Task<MonthlyExpense?> GetByIdAsync(int id);
+    Task AddAsync(MonthlyExpense expense);
+    Task UpdateAsync(MonthlyExpense expense);
+    Task DeleteAsync(MonthlyExpense expense);
 }
 
 // BUG: Missing proper async patterns in some methods
