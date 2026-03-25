@@ -43,14 +43,19 @@ public class FinancialService : IFinancialService
             TotalSalaries = totalSalaries,
             NetIncome = netIncome,
             PartnerIncomes = partnerIncomes.ToList(),
-            Expenses = expenses.Select(e => new ExpenseDto
+            Expenses = expenses.Select(x => new ExpenseDto
             {
-                Id = e.Id,
-                Description = e.Description,
-                Amount = e.Amount,
-                Category = e.Category.ToString(),
-                Date = new DateTime(e.Year, e.Month, 1),
-                IsApproved = !string.IsNullOrEmpty(e.ApprovedBy)
+                PartnerId = x.PartnerId,
+                AssetId = x.AssetId,
+                EmployeeId = x.EmployeeId,
+                Description = x.Description,
+                Amount = x.Amount,
+                Category = x.Category.ToString(),
+                Month = x.Month,
+                Year = x.Year,
+                IsRecurring = x.IsRecurring,
+                ApprovedBy = x.ApprovedBy,
+                ApprovedDate = x.ApprovedDate,
             }).ToList()
         };
     }
@@ -61,7 +66,7 @@ public class FinancialService : IFinancialService
         var totalExpenses = await _financialRepository.GetTotalExpensesAsync(month, year);
         var totalSalaries = await _financialRepository.GetTotalSalariesAsync(month, year);
 
-        return totalIncome - totalExpenses - totalSalaries;
+        return totalIncome - totalExpenses;
     }
 
     public async Task<IEnumerable<PartnerIncomeDto>> CalculatePartnerIncomesAsync(int month, int year)

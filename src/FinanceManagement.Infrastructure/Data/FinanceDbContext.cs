@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using FinanceManagement.Domain.Entities;
 using System.Text;
+using FinanceManagement.Application.DTOs;
 
 namespace FinanceManagement.Infrastructure.Data;
 
@@ -10,6 +11,7 @@ public class FinanceDbContext : DbContext
     {
     }
 
+    public DbSet<Asset> Asset { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<Partner> Partners { get; set; }
     public DbSet<Branch> Branches { get; set; }
@@ -24,6 +26,11 @@ public class FinanceDbContext : DbContext
     public DbSet<DocType> DocTypes { get; set; }
     public DbSet<Documents> Documents { get; set; }
     public DbSet<EmployeeDocument> EmployeeDocuments { get; set; }
+
+    public DbSet<Revenue> Revenue { get; set; }
+    // Store Procedure 
+
+    public DbSet<TotalExpenseDTO> TotalExpenseDTO { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -341,6 +348,8 @@ public class FinanceDbContext : DbContext
             .HasForeignKey(e => e.DocumentId)
             .OnDelete(DeleteBehavior.Restrict);
         });
+        // store procedure method
+        modelBuilder.Entity<TotalExpenseDTO>().HasNoKey();
     }
 }
 

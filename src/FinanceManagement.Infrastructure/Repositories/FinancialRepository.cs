@@ -3,6 +3,7 @@ using FinanceManagement.Application.Interfaces;
 using FinanceManagement.Domain.Entities;
 using FinanceManagement.Domain.Enums;
 using FinanceManagement.Infrastructure.Data;
+using Microsoft.Data.SqlClient;
 
 namespace FinanceManagement.Infrastructure.Repositories;
 
@@ -18,14 +19,27 @@ public class FinancialRepository : IFinancialRepository
     public async Task<decimal> GetTotalIncomeAsync(int month, int year)
     {
         // PERFORMANCE ISSUE: No index on TransactionDate
-        var transactions = await _context.BankTransactions
-            .Where(t => t.TransactionDate.Month == month && 
-                       t.TransactionDate.Year == year &&
-                       t.Type == TransactionType.Income)
-            .ToListAsync();
+        //var transactions = await _context.BankTransactions
+        //    .Where(t => t.TransactionDate.Month == month &&
+        //               t.TransactionDate.Year == year &&
+        //               t.Type == TransactionType.Income)
+        //    .ToListAsync();
+
+        var totalRevenue = await _context.Revenue
+                            .Where(ep => ep.Date.Month == month && ep.Date.Year == year)
+                            .ToListAsync();
 
         // BUG: Using LINQ Sum on client side instead of database
-        return transactions.Sum(t => t.Amount);
+        return totalRevenue.Sum(t => t.Amount);
+        //var result = await _context.BankTransactions
+        //   .FromSqlRaw("EXEC GetTotalIncomeAsync @Month, @Year",
+        //       new SqlParameter("@Month", month),
+        //       new SqlParameter("@Year", year))
+        //   .AsNoTracking()
+        //   .FirstOrDefaultAsync();
+
+        //return result?.Amount ?? 0;
+
     }
 
     public async Task<decimal> GetTotalExpensesAsync(int month, int year)
@@ -35,13 +49,22 @@ public class FinancialRepository : IFinancialRepository
             .Where(e => e.Month == month && e.Year == year)
             .SumAsync(e => e.Amount);
 
-        var bankExpenses = await _context.BankTransactions
-            .Where(t => t.TransactionDate.Month == month && 
-                       t.TransactionDate.Year == year &&
-                       t.Type == TransactionType.Expense)
-            .SumAsync(t => t.Amount);
+        //var bankExpenses = await _context.BankTransactions
+        //    .Where(t => t.TransactionDate.Month == month &&
+        //               t.TransactionDate.Year == year &&
+        //               t.Type == TransactionType.Expense)
+        //    .SumAsync(t => t.Amount);
 
-        return monthlyExpenses + bankExpenses; // BUG: Double counting
+        return monthlyExpenses; // BUG: Double counting
+
+        // var result = await _context.TotalExpenseDTO
+        //.FromSqlRaw(
+        //    "EXEC GetTotalExpenses @Month, @Year",
+        //    new SqlParameter("@Month", month),
+        //    new SqlParameter("@Year", year))
+        //.FirstOrDefaultAsync();
+
+        // return result?.TotalExpenseAmount ?? 0;
     }
 
     public async Task<decimal> GetTotalSalariesAsync(int month, int year)
@@ -60,7 +83,7 @@ public class FinancialRepository : IFinancialRepository
         // PERFORMANCE ISSUE: Missing index on Month + Year
         return await _context.MonthlyExpenses
             .Where(e => e.Month == month && e.Year == year)
-            .ToListAsync();
+            .ToListAsync(); 
     }
 
     public async Task<decimal> GetPartnerIncomeAsync(int partnerId, int month, int year)

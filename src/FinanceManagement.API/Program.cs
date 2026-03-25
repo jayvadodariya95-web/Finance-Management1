@@ -1,24 +1,30 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using Serilog;
-using FinanceManagement.Infrastructure.Data;
+using FinanceManagement.API.Middleware;
 using FinanceManagement.Application.Interfaces;
+using FinanceManagement.Domain.Entities;
+using FinanceManagement.Infrastructure.Data;
 using FinanceManagement.Infrastructure.Repositories;
 using FinanceManagement.Infrastructure.Services;
-using FinanceManagement.API.Middleware;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Serilog;
+using System.Text;
+using static FinanceManagement.Infrastructure.Services.UserService;
 
 var builder = WebApplication.CreateBuilder(args);
 
 Log.Logger = new LoggerConfiguration()
-    .WriteTo.Console()
+      .WriteTo.Console()
     .WriteTo.File("logs/finance-api-.txt", rollingInterval: RollingInterval.Day)
     .CreateLogger();
 
 builder.Host.UseSerilog();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -31,9 +37,27 @@ builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
 builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
 builder.Services.AddScoped<IBankTransactionRepository, BankTransactionRepository>();
 builder.Services.AddScoped<IFinancialRepository, FinancialRepository>();
+builder.Services.AddScoped<IAssetRepository, AssetRepository>();
+builder.Services.AddScoped<IDocTypeRepository, DocTypeRepository>();
+builder.Services.AddScoped<IMonthlyExpenseRepository, ExpenseRepository>();
+builder.Services.AddScoped<IProjectEmployeeRepository, ProjectEmployeeRepository>();
+builder.Services.AddScoped<IRevenueRepository, RevenueRepository>();
+builder.Services.AddScoped<IEmployeeDocumentRepository, EmployeeDocumentRepository>();
 
+builder.Services.AddScoped<IEmployeeDocumentService, EmployeeDocumentService>();
+builder.Services.AddScoped<IRevenueService, RevenueService>();
+builder.Services.AddScoped<IExpenseService, ExpenseService>();
+builder.Services.AddScoped<IDocTypeService, DocTypeService>();
+builder.Services.AddScoped<IAssetService, AssetService>();
+builder.Services.AddScoped<IUserServices, UserService>();
 builder.Services.AddScoped<IFinancialService, FinancialService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IPartnerServices, PartnersService>();
+builder.Services.AddScoped<IEmployeeServices, EmployeeService>();
+builder.Services.AddScoped<IProjectService, ProjectService>();
+
+
+
 
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var secretKey = jwtSettings["SecretKey"];
@@ -63,7 +87,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("DefaultPolicy",
         builder =>
         {
-            builder.WithOrigins("http://localhost:3000", "https://localhost:3000")
+            builder.WithOrigins("http://localhost:5173", "https://localhost:5173")
                    .AllowAnyMethod()
                    .AllowAnyHeader();
         });
@@ -76,13 +100,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-app.UseHttpsRedirection();
 app.UseCors("DefaultPolicy");
+app.UseHttpsRedirection();
 app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.UseStaticFiles();
 
 using (var scope = app.Services.CreateScope())
 {
