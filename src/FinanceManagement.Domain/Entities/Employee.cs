@@ -13,10 +13,9 @@ public class Employee : BaseEntity
     public int? PreviousCTC { get; set; }
     public int CurrentCTC { get; set; }
     public DateTime JoinDate { get; set; }
-    public DateTime RelievingDate { get; set; }
+    public DateTime? RelievingDate { get; set; }
     public int TakenLeave { get; set; }
     public bool IsActive { get; set; } = true;
-
     public User User { get; set; } = null!;
     public Branch? Branch { get; set; }
     public ICollection<ProjectEmployee> ProjectEmployee { get; set; } = new List<ProjectEmployee>();
