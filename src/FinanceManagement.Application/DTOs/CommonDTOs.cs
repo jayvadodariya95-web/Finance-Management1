@@ -300,3 +300,28 @@ public class UploadEmployeeDocumentDto
     public int DocType_Id { get; set; }
     public IFormFile File { get; set; }
 }
+
+
+
+public class ProfileDto
+{
+    public int Id { get; set; }
+    public int UserId { get; set; }
+    public bool IsPaid { get; set; }
+    public int? Amount { get; set; }
+    public DateTime CreatedAt { get; set; }
+}
+
+public class CreateProfileDto
+{
+    public int UserId { get; set; }
+    public bool IsPaid { get; set; }
+    public int? Amount { get; set; }
+}
+
+public class UpdateProfileDto
+{
+    public int UserId { get; set; }
+    public bool IsPaid { get; set; }
+    public int? Amount { get; set; }
+}

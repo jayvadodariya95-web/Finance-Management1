@@ -123,3 +123,11 @@ public interface IEmployeeDocumentService
 {
    Task UploadAsync(UploadEmployeeDocumentDto dto);
 }
+public interface IProfileService
+{
+    Task<IEnumerable<ProfileDto>> GetAllAsync();
+    Task<ProfileDto?> GetByIdAsync(int id);
+    Task<ProfileDto> CreateAsync(CreateProfileDto dto);
+    Task<ProfileDto> UpdateAsync(int id, UpdateProfileDto dto);
+    Task<bool> DeleteAsync(int id);
+}
