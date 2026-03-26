@@ -116,3 +116,11 @@ public interface IEmployeeDocumentRepository
     Task <Documents>AddDocumentAsync(Documents document);
     Task <EmployeeDocument>AddEmployeeDocumentAsync(EmployeeDocument employeeDocument);
 }
+public interface IProfileRepository
+{
+    Task<IEnumerable<Profile>> GetAllAsync();
+    Task<Profile?> GetByIdAsync(int id);
+    Task<Profile> CreateAsync(Profile profile);
+    Task<Profile> UpdateAsync(Profile profile);
+    Task<bool> DeleteAsync(int id);
+}

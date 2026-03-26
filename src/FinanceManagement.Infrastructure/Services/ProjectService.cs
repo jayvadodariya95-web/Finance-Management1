@@ -35,34 +35,34 @@ namespace FinanceManagement.Infrastructure.Services
 
                 var projects = await _projectRepo.GetAllAsync();
 
-                var result = projects.Select(p => new ProjectDto
-                {
-                    Id = p.Id,
-                    Name = p.Name,
-                    ClientName = p.ClientName,
-                    ProjectValue = p.ProjectValue,
-                    StartDate = p.StartDate,
-                    EndDate = p.EndDate,
-                    Status = p.Status.ToString(),
-                    ClientManagerContact = p.ClientManagerContact,
-                    ClientManagerEmail = p.ClientManagerEmail,
-                    ClientManagerName = p.ClientManagerName,
-                    Description = p.Description,
-                    InterviewingUserId = p.InterviewingUserId,
-                    IsSmooth = p.IsSmooth,
-                    IsToolUsed = (bool)p.IsToolUsed,
-                    LeaveApplyWay = p.LeaveApplyWay,
-                    ManagedByPartnerId = p.ManagedByPartnerId,
-                    ProfileId = p.ProfileId,
-                    ManagerContact = p.ManagerContact,
-                    ManagerEmail = p.ManagerEmail,
-                    ManagerName = p.ManagerName,
-                    MobileNumberUsed = p.MobileNumberUsed,
-                    TechnologyStack = p.TechnologyStack,
+            return projects.Select( p => new ProjectDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                ClientName = p.ClientName,
+                ProjectValue = p.ProjectValue,
+                StartDate = p.StartDate,
+                EndDate = p.EndDate,
+                Status = p.Status != null ? p.Status.ToString() : null,
+                ClientManagerContact = p.ClientManagerContact,
+                ClientManagerEmail = p.ClientManagerEmail,
+                ClientManagerName   = p.ClientManagerName,
+                Description = p.Description,
+                InterviewingUserId = p.InterviewingUserId,
+                IsSmooth = p.IsSmooth,
+                IsToolUsed = p.IsToolUsed ?? false,
+                LeaveApplyWay = p.LeaveApplyWay,
+                ManagedByPartnerId = p.ManagedByPartnerId,
+                ProfileId = p.ProfileId,
+                ManagerContact = p.ManagerContact,
+                ManagerEmail = p.ManagerEmail,
+                ManagerName = p.ManagerName,
+                MobileNumberUsed = p.MobileNumberUsed,
+                TechnologyStack = p.TechnologyStack,
 
-                    ManagedByPartner = p.ManagedByPartner != null
-                        ? p.ManagedByPartner.User.FirstName + " " + p.ManagedByPartner.User.LastName
-                        : null,
+                ManagedByPartner = p.ManagedByPartner?.User != null
+    ? $"{p.ManagedByPartner.User.FirstName} {p.ManagedByPartner.User.LastName}"
+    : null,
 
                     Employees = p.ProjectEmployees != null
                         ? p.ProjectEmployees.Select(pe => new ProjectEmployeeDto
