@@ -21,7 +21,9 @@ namespace FinanceManagement.Infrastructure.Repositories
 
         public async Task<IEnumerable<DocType>> GetAllAsync()
         {
-            return await _context.DocTypes.ToListAsync();
+            return await _context.DocTypes
+                .Where(d => d.IsDeleted == false)
+                .ToListAsync();
         }
 
         public async Task<DocType?> GetByIdAsync(int id)

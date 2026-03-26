@@ -207,7 +207,7 @@ namespace FinanceManagement.Infrastructure.Services
                     IsMainPartner = partner.IsMainPartner,
                     SharePercentage = partner.SharePercentage,
                     PartnershipType = partner.PartnershipType,
-                    //BranchId = partner.BranchId,
+                    BranchId = 1
 
                 };
                 return await _partnerRepo.CreateAsync(newPartner);
