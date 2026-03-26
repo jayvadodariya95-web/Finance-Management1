@@ -42,7 +42,7 @@ public class ProjectRepository : IProjectRepository
     public async Task<IEnumerable<Project>> GetByPartnerAsync(int partnerId)
     {
         return await _context.Projects
-            .Where(p => p.ManagedByPartnerId == partnerId)
+            .Where(p => p.ManagedByPartnerId == partnerId && p.IsDeleted == false)
             .ToListAsync();
     }
 

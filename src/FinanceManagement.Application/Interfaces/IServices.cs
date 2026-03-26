@@ -23,15 +23,15 @@ public interface IFinancialService
 
 public interface IProjectService
 {
-    Task<IEnumerable<ProjectDto>> GetAllProjectsAsync();
-    Task<ProjectDto?> GetProjectByIdAsync(int id);
-    Task<ProjectDto> CreateProjectAsync(CreateProjectDto project);
-    Task<ProjectDto> UpdateProjectAsync(int id, UpdateProjectDto project);
-    Task<bool> DeleteProjectAsync(int id);
+    Task<ApiResponse<IEnumerable<ProjectDto>>> GetAllProjectsAsync();
+    Task<ApiResponse<ProjectDto?>> GetProjectByIdAsync(int id);
+    Task<ApiResponse<ProjectDto>> CreateProjectAsync(CreateProjectDto project);
+    Task<ApiResponse<ProjectDto>> UpdateProjectAsync(int id, UpdateProjectDto project);
+    Task<ApiResponse<bool>> DeleteProjectAsync(int id);
     Task<ProjectEmployeeDto> AssignEmployeeToProjectAsync(AssignEmployeeDto dto);
     Task<bool> UnassignEmployeeFromProjectAsync(int projectId, int employeeId);
     Task<IEnumerable<ProjectEmployeeDto>> GetProjectEmployeesAsync(int projectId);
-    Task<IEnumerable<ProjectDto>> GetProjectsByPartnerAsync(int partnerId);
+    Task<ApiResponse<IEnumerable<ProjectDto>>> GetProjectsByPartnerAsync(int partnerId);
 }
 
 public interface INotificationService

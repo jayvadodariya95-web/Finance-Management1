@@ -23,6 +23,7 @@ namespace FinanceManagement.Infrastructure.Repositories
         {
             return await _context.Asset
                 .Include(a => a.MonthlyExpenses)
+                .Where(a => a.IsDeleted == false)
                 .ToListAsync();
         }
 
@@ -30,6 +31,7 @@ namespace FinanceManagement.Infrastructure.Repositories
         {
             return await _context.Asset
                 .Include(a => a.MonthlyExpenses)
+                .Where(a => a.IsDeleted == false)
                 .FirstOrDefaultAsync(a => a.Id == id);
         }
 
