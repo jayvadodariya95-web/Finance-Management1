@@ -32,37 +32,37 @@ namespace FinanceManagement.Infrastructure.Services
             var response = new ApiResponse<IEnumerable<ProjectDto>>();
             try
             {
-
                 var projects = await _projectRepo.GetAllAsync();
 
-            return projects.Select( p => new ProjectDto
-            {
-                Id = p.Id,
-                Name = p.Name,
-                ClientName = p.ClientName,
-                ProjectValue = p.ProjectValue,
-                StartDate = p.StartDate,
-                EndDate = p.EndDate,
-                Status = p.Status != null ? p.Status.ToString() : null,
-                ClientManagerContact = p.ClientManagerContact,
-                ClientManagerEmail = p.ClientManagerEmail,
-                ClientManagerName   = p.ClientManagerName,
-                Description = p.Description,
-                InterviewingUserId = p.InterviewingUserId,
-                IsSmooth = p.IsSmooth,
-                IsToolUsed = p.IsToolUsed ?? false,
-                LeaveApplyWay = p.LeaveApplyWay,
-                ManagedByPartnerId = p.ManagedByPartnerId,
-                ProfileId = p.ProfileId,
-                ManagerContact = p.ManagerContact,
-                ManagerEmail = p.ManagerEmail,
-                ManagerName = p.ManagerName,
-                MobileNumberUsed = p.MobileNumberUsed,
-                TechnologyStack = p.TechnologyStack,
+                // materialize and map into DTOs
+                var result = projects?.Select(p => new ProjectDto
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    ClientName = p.ClientName,
+                    ProjectValue = p.ProjectValue,
+                    StartDate = p.StartDate,
+                    EndDate = p.EndDate,
+                    Status = p.Status.ToString(),
+                    ClientManagerContact = p.ClientManagerContact,
+                    ClientManagerEmail = p.ClientManagerEmail,
+                    ClientManagerName = p.ClientManagerName,
+                    Description = p.Description,
+                    InterviewingUserId = p.InterviewingUserId,
+                    IsSmooth = p.IsSmooth,
+                    IsToolUsed = p.IsToolUsed ?? false,
+                    LeaveApplyWay = p.LeaveApplyWay,
+                    ManagedByPartnerId = p.ManagedByPartnerId,
+                    ProfileId = p.ProfileId,
+                    ManagerContact = p.ManagerContact,
+                    ManagerEmail = p.ManagerEmail,
+                    ManagerName = p.ManagerName,
+                    MobileNumberUsed = p.MobileNumberUsed,
+                    TechnologyStack = p.TechnologyStack,
 
-                ManagedByPartner = p.ManagedByPartner?.User != null
-    ? $"{p.ManagedByPartner.User.FirstName} {p.ManagedByPartner.User.LastName}"
-    : null,
+                    ManagedByPartner = p.ManagedByPartner?.User != null
+                        ? $"{p.ManagedByPartner.User.FirstName} {p.ManagedByPartner.User.LastName}"
+                        : null,
 
                     Employees = p.ProjectEmployees != null
                         ? p.ProjectEmployees.Select(pe => new ProjectEmployeeDto
@@ -77,20 +77,15 @@ namespace FinanceManagement.Infrastructure.Services
                             Role = pe.Role,
                             IsBench = pe.IsBench,
                             IsActive = pe.IsActive
-
-
-
                         }).ToList()
                         : new List<ProjectEmployeeDto>()
-
-                });
+                }).ToList() ?? new List<ProjectDto>();
 
                 response.Data = result;
-                response.Message = "Project fetched successfully";
+                response.Message = "Projects fetched successfully";
                 response.Success = true;
-
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 response.Data = null;
                 response.Message = "Failed to fetch project";
@@ -131,7 +126,7 @@ namespace FinanceManagement.Infrastructure.Services
                     Description = p.Description,
                     InterviewingUserId = p.InterviewingUserId,
                     IsSmooth = p.IsSmooth,
-                    IsToolUsed = (bool)p.IsToolUsed,
+                    IsToolUsed = p.IsToolUsed ?? false,
                     LeaveApplyWay = p.LeaveApplyWay,
                     ManagedByPartnerId = p.ManagedByPartnerId,
                     ProfileId = p.ProfileId,
@@ -141,7 +136,7 @@ namespace FinanceManagement.Infrastructure.Services
                     MobileNumberUsed = p.MobileNumberUsed,
                     TechnologyStack = p.TechnologyStack,
 
-                    ManagedByPartner = p.ManagedByPartner != null
+                    ManagedByPartner = p.ManagedByPartner != null && p.ManagedByPartner.User != null
                         ? p.ManagedByPartner.User.FirstName + " " + p.ManagedByPartner.User.LastName
                         : null,
 
@@ -158,9 +153,6 @@ namespace FinanceManagement.Infrastructure.Services
                             Role = pe.Role,
                             IsBench = pe.IsBench,
                             IsActive = pe.IsActive
-
-
-
                         }).ToList()
                         : new List<ProjectEmployeeDto>()
                 };
@@ -168,9 +160,8 @@ namespace FinanceManagement.Infrastructure.Services
                 response.Data = result;
                 response.Message = "Project fetched successfully.";
                 response.Success = true;
-
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 response.Data = null;
                 response.Message = "Failed to fetch project";
@@ -191,7 +182,6 @@ namespace FinanceManagement.Infrastructure.Services
                     response.Success = false;
 
                     return response;
-
                 }
                 var entity = new Project
                 {
@@ -233,14 +223,12 @@ namespace FinanceManagement.Infrastructure.Services
                 response.Data = data;
                 response.Message = "Project created successfully.";
                 response.Success = true;
-
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 response.Data = null;
                 response.Message = "Failed to create project";
                 response.Success = false;
-
             }
             return response;
         }
@@ -250,14 +238,13 @@ namespace FinanceManagement.Infrastructure.Services
             var response = new ApiResponse<ProjectDto>();
             try
             {
-
                 var existing = await _projectRepo.GetByIdAsync(id);
 
                 if (existing == null)
                 {
                     response.Message = "Project not found.";
                     response.Success = false;
-
+                    return response;
                 }
 
                 existing.Name = dto.Name;
@@ -296,14 +283,12 @@ namespace FinanceManagement.Infrastructure.Services
                 response.Data = result;
                 response.Message = "Project updated successfully.";
                 response.Success = true;
-
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 response.Data = null;
                 response.Message = "Failed to update project";
                 response.Success = false;
-
             }
             return response;
         }
@@ -317,17 +302,14 @@ namespace FinanceManagement.Infrastructure.Services
 
                 response.Success = true;
                 response.Message = "Project deleted successfully";
-
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 response.Success = false;
                 response.Message = "Failed to delete project";
-
             }
             return response;
         }
-
 
         public async Task<ProjectEmployeeDto> AssignEmployeeToProjectAsync(AssignEmployeeDto dto)
         {
@@ -372,12 +354,10 @@ namespace FinanceManagement.Infrastructure.Services
             };
         }
 
-
         public async Task<bool> UnassignEmployeeFromProjectAsync(int projectId, int employeeId)
         {
             return await _projectEmployeeRepo.UnassignAsync(projectId, employeeId);
         }
-
 
         public async Task<IEnumerable<ProjectEmployeeDto>> GetProjectEmployeesAsync(int projectId)
         {
@@ -411,6 +391,7 @@ namespace FinanceManagement.Infrastructure.Services
                     response.Data = new List<ProjectDto>();
                     response.Message = "No projects found for this partner.";
                     response.Success = false;
+                    return response;
                 }
 
                 var result = projects.Select(p => new ProjectDto
@@ -419,18 +400,17 @@ namespace FinanceManagement.Infrastructure.Services
                     Name = p.Name,
                     ClientName = p.ClientName,
                     Status = p.Status.ToString()
-                });
+                }).ToList();
 
                 response.Data = result;
                 response.Message = "Projects fetched successfully.";
-                response.Success = true
+                response.Success = true;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 response.Data = null;
                 response.Message = "Something went wrong while processing the request.";
                 response.Success = false;
-
             }
             return response;
         }
