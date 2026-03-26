@@ -125,9 +125,9 @@ public interface IEmployeeDocumentService
 }
 public interface IProfileService
 {
-    Task<IEnumerable<ProfileDto>> GetAllAsync();
-    Task<ProfileDto?> GetByIdAsync(int id);
-    Task<ProfileDto> CreateAsync(CreateProfileDto dto);
-    Task<ProfileDto> UpdateAsync(int id, UpdateProfileDto dto);
-    Task<bool> DeleteAsync(int id);
+    Task<ApiResponse<IEnumerable<ProfileDto>>> GetAllAsync();
+    Task<ApiResponse<ProfileDto>> GetByIdAsync(int id);
+    Task<ApiResponse<ProfileDto>> CreateAsync(CreateProfileDto dto);
+    Task<ApiResponse<ProfileDto>> UpdateAsync(int id, UpdateProfileDto dto);
+    Task<ApiResponse<bool>> DeleteAsync(int id);
 }
