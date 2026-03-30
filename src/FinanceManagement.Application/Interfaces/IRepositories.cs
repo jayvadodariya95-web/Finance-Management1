@@ -124,3 +124,12 @@ public interface IProfileRepository
     Task<Profile> UpdateAsync(Profile profile);
     Task<bool> DeleteAsync(int id);
 }
+public interface ICategoryRepository
+{
+    public Task<IEnumerable<Category>> GetAllAsync();
+    public Task<Category?> GetByIdAsync(int id);
+    public Task<Category> CreateAsync(Category category);
+    public Task<Category> UpdateAsync(int id, Category category);
+    public Task<bool> DeleteAsync(int id);
+
+}

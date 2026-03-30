@@ -125,9 +125,18 @@ public interface IEmployeeDocumentService
 }
 public interface IProfileService
 {
-    Task<ApiResponse<IEnumerable<ProfileDto>>> GetAllAsync();
+    Task<ApiResponse<IEnumerable<Profile>>> GetAllAsync();
     Task<ApiResponse<ProfileDto>> GetByIdAsync(int id);
     Task<ApiResponse<ProfileDto>> CreateAsync(CreateProfileDto dto);
     Task<ApiResponse<ProfileDto>> UpdateAsync(int id, UpdateProfileDto dto);
     Task<ApiResponse<bool>> DeleteAsync(int id);
+}
+public interface ICategoryService
+{
+    public Task<ApiResponse<IEnumerable<Category>>> GetAllAsync();
+    public Task<ApiResponse<Category?>> GetByIdAsync(int id);
+    public Task<ApiResponse<CategoryDto>> CreateAsync(CategoryDto category);
+    public Task<ApiResponse<CategoryDto>> UpdateAsync(int id, CategoryDto category);
+    public Task<bool> DeleteAsync(int id);
+
 }

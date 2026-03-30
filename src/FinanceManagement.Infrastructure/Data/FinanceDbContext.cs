@@ -26,7 +26,7 @@ public class FinanceDbContext : DbContext
     public DbSet<DocType> DocTypes { get; set; }
     public DbSet<Documents> Documents { get; set; }
     public DbSet<EmployeeDocument> EmployeeDocuments { get; set; }
-
+    public DbSet<Category> Categories { get; set; }
     public DbSet<Revenue> Revenue { get; set; }
     // Store Procedure 
 
@@ -213,9 +213,6 @@ public class FinanceDbContext : DbContext
             entity.Property(me => me.Amount)
                   .HasPrecision(18, 2)
                   .IsRequired();
-            entity.Property(me => me.Category)
-                  .IsRequired()
-                  .HasConversion<int>();
             entity.Property(me => me.IsRecurring)
                   .HasDefaultValue(false);
             entity.Property(me => me.ApprovedBy)
@@ -232,6 +229,10 @@ public class FinanceDbContext : DbContext
                   .WithMany(a => a.MonthlyExpenses)
                   .HasForeignKey(me => me.AssetId)
                   .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.Category)
+                    .WithMany(c => c.MonthlyExpenses)
+                    .HasForeignKey(e => e.CategoryId)
+                    .OnDelete(DeleteBehavior.Restrict);
             // PERFORMANCE ISSUE: Missing index on Month + Year for monthly reports
             // MonthlyExpense configuration
         });
@@ -347,6 +348,16 @@ public class FinanceDbContext : DbContext
             .WithMany(e => e.EmployeeDocuments)
             .HasForeignKey(e => e.DocumentId)
             .OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<Category>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.CategoryName)
+                  .IsRequired()
+                  .HasMaxLength(100);
+
+            entity.Property(e => e.IsRecurring)
+                  .IsRequired();
         });
         // store procedure method
         modelBuilder.Entity<TotalExpenseDTO>().HasNoKey();
