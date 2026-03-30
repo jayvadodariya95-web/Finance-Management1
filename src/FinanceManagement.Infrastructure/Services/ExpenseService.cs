@@ -40,7 +40,7 @@ namespace FinanceManagement.Infrastructure.Services
                 EmployeeId = dto.EmployeeId == 0 ? null : dto.EmployeeId,
                 Description = dto.Description,
                 Amount = dto.Amount,
-                Category = (ExpenseCategory)dto.Category,
+                CategoryId = dto.CategoryId,
                 Month = dto.Month,
                 Year = dto.Year,
                 IsRecurring = dto.IsRecurring
@@ -75,7 +75,7 @@ namespace FinanceManagement.Infrastructure.Services
                 EmployeeId = dto.EmployeeId,
                 Description = dto.Description,
                 Amount = dto.Amount,
-                Category = dto.Category,
+                CategoryId = dto.CategoryId,
                 Month = dto.Month,
                 Year = dto.Year,
                 IsRecurring = dto.IsRecurring
@@ -117,8 +117,8 @@ namespace FinanceManagement.Infrastructure.Services
             if (dto.Amount.HasValue)
                 existing.Amount = dto.Amount.Value;
 
-            if (dto.Category.HasValue)
-                existing.Category = dto.Category.Value;
+            if (dto.CategoryId.HasValue)
+                existing.CategoryId = dto.CategoryId.Value;
 
             if (dto.Month.HasValue)
                 existing.Month = dto.Month.Value;
