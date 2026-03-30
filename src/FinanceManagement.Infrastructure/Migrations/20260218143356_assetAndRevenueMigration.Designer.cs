@@ -4,6 +4,7 @@ using FinanceManagement.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FinanceManagement.Infrastructure.Migrations
 {
     [DbContext(typeof(FinanceDbContext))]
-    partial class FinanceDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260218143356_assetAndRevenueMigration")]
+    partial class assetAndRevenueMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -61,7 +64,7 @@ namespace FinanceManagement.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Asset");
+                    b.ToTable("Assets");
                 });
 
             modelBuilder.Entity("FinanceManagement.Domain.Entities.BankAccount", b =>
@@ -224,7 +227,7 @@ namespace FinanceManagement.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("BranchId")
+                    b.Property<int?>("BranchId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
@@ -233,16 +236,13 @@ namespace FinanceManagement.Infrastructure.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("CurrentCTC")
-                        .HasColumnType("int");
-
                     b.Property<string>("Department")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("EmployeeCode")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -253,21 +253,12 @@ namespace FinanceManagement.Infrastructure.Migrations
                     b.Property<DateTime>("JoinDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("MonthlySalary")
-                        .HasColumnType("int");
+                    b.Property<decimal>("MonthlySalary")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Position")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("PreviousCTC")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("RelievingDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("TakenLeave")
-                        .HasColumnType("int");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -282,49 +273,10 @@ namespace FinanceManagement.Infrastructure.Migrations
 
                     b.HasIndex("BranchId");
 
-                    b.HasIndex("EmployeeCode")
-                        .IsUnique();
-
                     b.HasIndex("UserId")
                         .IsUnique();
 
                     b.ToTable("Employees");
-                });
-
-            modelBuilder.Entity("FinanceManagement.Domain.Entities.EmployeeDocument", b =>
-                {
-                    b.Property<int>("EmployeeId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("DocumentId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("EmployeeId", "DocumentId");
-
-                    b.HasIndex("DocumentId");
-
-                    b.HasIndex("EmployeeId", "DocumentId")
-                        .IsUnique();
-
-                    b.ToTable("EmployeeDocuments");
                 });
 
             modelBuilder.Entity("FinanceManagement.Domain.Entities.MonthlyExpense", b =>
@@ -340,8 +292,7 @@ namespace FinanceManagement.Infrastructure.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("ApprovedBy")
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("ApprovedDate")
                         .HasColumnType("datetime2");
@@ -363,21 +314,13 @@ namespace FinanceManagement.Infrastructure.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
-                    b.Property<int?>("EmployeeId")
-                        .HasColumnType("int");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsRecurring")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
+                        .HasColumnType("bit");
 
                     b.Property<int>("Month")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PartnerId")
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -392,10 +335,6 @@ namespace FinanceManagement.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AssetId");
-
-                    b.HasIndex("EmployeeId");
-
-                    b.HasIndex("PartnerId");
 
                     b.ToTable("MonthlyExpenses");
                 });
@@ -449,49 +388,6 @@ namespace FinanceManagement.Infrastructure.Migrations
                     b.ToTable("Partners");
                 });
 
-            modelBuilder.Entity("FinanceManagement.Domain.Entities.Profile", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int?>("Amount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsPaid")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
-
-                    b.ToTable("Profiles");
-                });
-
             modelBuilder.Entity("FinanceManagement.Domain.Entities.Project", b =>
                 {
                     b.Property<int>("Id")
@@ -500,21 +396,10 @@ namespace FinanceManagement.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("ClientManagerContact")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("ClientManagerEmail")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("ClientManagerName")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
                     b.Property<string>("ClientName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -528,63 +413,25 @@ namespace FinanceManagement.Infrastructure.Migrations
                     b.Property<DateTime?>("EndDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("InterviewingUserId")
-                        .HasColumnType("int");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
-
-                    b.Property<bool>("IsSmooth")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
-                    b.Property<bool?>("IsToolUsed")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("LeaveApplyWay")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
 
                     b.Property<int>("ManagedByPartnerId")
                         .HasColumnType("int");
 
-                    b.Property<string>("ManagerContact")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("ManagerEmail")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("ManagerName")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("MobileNumberUsed")
-                        .HasMaxLength(25)
-                        .HasColumnType("nvarchar(25)");
-
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
-                    b.Property<int?>("ProfileId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ProjectValue")
-                        .HasColumnType("int");
+                    b.Property<decimal>("ProjectValue")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
-
-                    b.Property<string>("TechnologyStack")
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -594,15 +441,9 @@ namespace FinanceManagement.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("InterviewingUserId");
-
                     b.HasIndex("ManagedByPartnerId");
 
-                    b.HasIndex("Name");
-
-                    b.HasIndex("ProfileId");
-
-                    b.ToTable("Projects", (string)null);
+                    b.ToTable("Projects");
                 });
 
             modelBuilder.Entity("FinanceManagement.Domain.Entities.ProjectEmployee", b =>
@@ -629,9 +470,6 @@ namespace FinanceManagement.Infrastructure.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsBench")
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsDeleted")
@@ -661,58 +499,6 @@ namespace FinanceManagement.Infrastructure.Migrations
                     b.ToTable("ProjectEmployees");
                 });
 
-            modelBuilder.Entity("FinanceManagement.Domain.Entities.Revenue", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Notes")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("PartnerId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("ProjectId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("Revenue_From")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PartnerId");
-
-                    b.HasIndex("ProjectId")
-                        .IsUnique()
-                        .HasFilter("[ProjectId] IS NOT NULL");
-
-                    b.ToTable("Revenue");
-                });
-
             modelBuilder.Entity("FinanceManagement.Domain.Entities.Settlement", b =>
                 {
                     b.Property<int>("Id")
@@ -721,9 +507,9 @@ namespace FinanceManagement.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("ActualAmount")
+                    b.Property<decimal>("ActualAmount")
                         .HasPrecision(18, 2)
-                        .HasColumnType("int");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -731,32 +517,18 @@ namespace FinanceManagement.Infrastructure.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("ExpectedAmount")
+                    b.Property<decimal>("ExpectedAmount")
                         .HasPrecision(18, 2)
-                        .HasColumnType("int");
-
-                    b.Property<int>("GrossProfit")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("int");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<int>("IsSetteled")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
-
                     b.Property<int>("Month")
                         .HasColumnType("int");
 
-                    b.Property<int>("NetProfit")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("int");
-
                     b.Property<string>("Notes")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("PartnerId")
                         .HasColumnType("int");
@@ -764,18 +536,11 @@ namespace FinanceManagement.Infrastructure.Migrations
                     b.Property<DateTime?>("ProcessedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime?>("SettledDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("SettlementAmount")
+                    b.Property<decimal>("SettlementAmount")
                         .HasPrecision(18, 2)
-                        .HasColumnType("int");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TotalExpense")
-                        .HasPrecision(18, 2)
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -789,8 +554,7 @@ namespace FinanceManagement.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PartnerId", "Month", "Year")
-                        .IsUnique();
+                    b.HasIndex("PartnerId");
 
                     b.ToTable("Settlements");
                 });
@@ -932,9 +696,7 @@ namespace FinanceManagement.Infrastructure.Migrations
                 {
                     b.HasOne("FinanceManagement.Domain.Entities.Branch", "Branch")
                         .WithMany("Employees")
-                        .HasForeignKey("BranchId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("BranchId");
 
                     b.HasOne("FinanceManagement.Domain.Entities.User", "User")
                         .WithOne("Employee")
@@ -947,48 +709,12 @@ namespace FinanceManagement.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("FinanceManagement.Domain.Entities.EmployeeDocument", b =>
-                {
-                    b.HasOne("FinanceManagement.Domain.Entities.Documents", "Documents")
-                        .WithMany("EmployeeDocuments")
-                        .HasForeignKey("DocumentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("FinanceManagement.Domain.Entities.Employee", "Employee")
-                        .WithMany("EmployeeDocuments")
-                        .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Documents");
-
-                    b.Navigation("Employee");
-                });
-
             modelBuilder.Entity("FinanceManagement.Domain.Entities.MonthlyExpense", b =>
                 {
-                    b.HasOne("FinanceManagement.Domain.Entities.Asset", "Asset")
+                    b.HasOne("FinanceManagement.Domain.Entities.Asset", null)
                         .WithMany("MonthlyExpenses")
                         .HasForeignKey("AssetId")
                         .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("FinanceManagement.Domain.Entities.Employee", "Employee")
-                        .WithMany("MonthlyExpenses")
-                        .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("FinanceManagement.Domain.Entities.Partner", "Partner")
-                        .WithMany("MonthlyExpenses")
-                        .HasForeignKey("PartnerId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Asset");
-
-                    b.Navigation("Employee");
-
-                    b.Navigation("Partner");
                 });
 
             modelBuilder.Entity("FinanceManagement.Domain.Entities.Partner", b =>
@@ -1008,46 +734,21 @@ namespace FinanceManagement.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("FinanceManagement.Domain.Entities.Profile", b =>
-                {
-                    b.HasOne("FinanceManagement.Domain.Entities.User", "User")
-                        .WithOne("Profile")
-                        .HasForeignKey("FinanceManagement.Domain.Entities.Profile", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("FinanceManagement.Domain.Entities.Project", b =>
                 {
-                    b.HasOne("FinanceManagement.Domain.Entities.User", "InterviewingUser")
-                        .WithMany()
-                        .HasForeignKey("InterviewingUserId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("FinanceManagement.Domain.Entities.Partner", "ManagedByPartner")
                         .WithMany("ManagedProjects")
                         .HasForeignKey("ManagedByPartnerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("FinanceManagement.Domain.Entities.Profile", "Profile")
-                        .WithMany("Projects")
-                        .HasForeignKey("ProfileId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("InterviewingUser");
-
                     b.Navigation("ManagedByPartner");
-
-                    b.Navigation("Profile");
                 });
 
             modelBuilder.Entity("FinanceManagement.Domain.Entities.ProjectEmployee", b =>
                 {
                     b.HasOne("FinanceManagement.Domain.Entities.Employee", "Employee")
-                        .WithMany("ProjectEmployee")
+                        .WithMany("ProjectAssignments")
                         .HasForeignKey("EmployeeId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -1063,30 +764,12 @@ namespace FinanceManagement.Infrastructure.Migrations
                     b.Navigation("Project");
                 });
 
-            modelBuilder.Entity("FinanceManagement.Domain.Entities.Revenue", b =>
-                {
-                    b.HasOne("FinanceManagement.Domain.Entities.Partner", "Partner")
-                        .WithMany("Revenues")
-                        .HasForeignKey("PartnerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("FinanceManagement.Domain.Entities.Project", "Project")
-                        .WithOne("Revenue")
-                        .HasForeignKey("FinanceManagement.Domain.Entities.Revenue", "ProjectId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("Partner");
-
-                    b.Navigation("Project");
-                });
-
             modelBuilder.Entity("FinanceManagement.Domain.Entities.Settlement", b =>
                 {
                     b.HasOne("FinanceManagement.Domain.Entities.Partner", "Partner")
                         .WithMany("Settlements")
                         .HasForeignKey("PartnerId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Partner");
@@ -1127,39 +810,16 @@ namespace FinanceManagement.Infrastructure.Migrations
                     b.Navigation("Partners");
                 });
 
-            modelBuilder.Entity("FinanceManagement.Domain.Entities.DocType", b =>
-                {
-                    b.Navigation("Documents");
-                });
-
-            modelBuilder.Entity("FinanceManagement.Domain.Entities.Documents", b =>
-                {
-                    b.Navigation("EmployeeDocuments");
-                });
-
             modelBuilder.Entity("FinanceManagement.Domain.Entities.Employee", b =>
                 {
-                    b.Navigation("EmployeeDocuments");
-
-                    b.Navigation("MonthlyExpenses");
-
-                    b.Navigation("ProjectEmployee");
+                    b.Navigation("ProjectAssignments");
                 });
 
             modelBuilder.Entity("FinanceManagement.Domain.Entities.Partner", b =>
                 {
                     b.Navigation("ManagedProjects");
 
-                    b.Navigation("MonthlyExpenses");
-
-                    b.Navigation("Revenues");
-
                     b.Navigation("Settlements");
-                });
-
-            modelBuilder.Entity("FinanceManagement.Domain.Entities.Profile", b =>
-                {
-                    b.Navigation("Projects");
                 });
 
             modelBuilder.Entity("FinanceManagement.Domain.Entities.Project", b =>
@@ -1168,7 +828,7 @@ namespace FinanceManagement.Infrastructure.Migrations
 
                     b.Navigation("ProjectEmployees");
 
-                    b.Navigation("Revenue");
+                    b.Navigation("Revenues");
                 });
 
             modelBuilder.Entity("FinanceManagement.Domain.Entities.User", b =>
@@ -1176,8 +836,6 @@ namespace FinanceManagement.Infrastructure.Migrations
                     b.Navigation("Employee");
 
                     b.Navigation("Partner");
-
-                    b.Navigation("Profile");
                 });
 #pragma warning restore 612, 618
         }
