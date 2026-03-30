@@ -1,18 +1,23 @@
 ﻿using FinanceManagement.Domain.Common;
-using FinanceManagement.Domain.Entities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-public class Revenue : BaseEntity
+namespace FinanceManagement.Domain.Entities
 {
-    public int Partner_Id { get; set; }
-    public int? Project_Id { get; set; }
+    public class Revenue : BaseEntity
+    {
+        public int PartnerId { get; set; }
+        public int? ProjectId { get; set; }
+        public decimal Amount { get; set; }
+        public DateTime Date { get; set; }
 
-    public decimal Amount { get; set; }
-    public DateTime Date { get; set; }
-
-    public bool Revenue_From { get; set; } = true;
-    public string? Notes { get; set; }
-
-    // Navigation properties
-    public Partner? Partner { get; set; }   // ✅ SINGLE object
-    public Project? Project { get; set; }
+        public bool Revenue_From { get; set; } = true;
+        public string? Notes { get; set; }
+        public Partner? Partner { get; set; }
+        public Project? Project { get; set; }
+    }
 }
+

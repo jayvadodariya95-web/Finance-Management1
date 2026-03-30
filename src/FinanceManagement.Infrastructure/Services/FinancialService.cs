@@ -43,14 +43,19 @@ public class FinancialService : IFinancialService
             TotalSalaries = totalSalaries,
             NetIncome = netIncome,
             PartnerIncomes = partnerIncomes.ToList(),
-            Expenses = expenses.Select(e => new ExpenseDto
+            Expenses = expenses.Select(x => new ExpenseDto
             {
-                Id = e.Id,
-                Description = e.Description,
-                Amount = e.Amount,
-                Category = e.Category.ToString(),
-                Date = new DateTime(e.Year, e.Month, 1),
-                IsApproved = !string.IsNullOrEmpty(e.ApprovedBy)
+                PartnerId = x.PartnerId,
+                AssetId = x.AssetId,
+                EmployeeId = x.EmployeeId,
+                Description = x.Description,
+                Amount = x.Amount,
+                Category = x.Category.ToString(),
+                Month = x.Month,
+                Year = x.Year,
+                IsRecurring = x.IsRecurring,
+                ApprovedBy = x.ApprovedBy,
+                ApprovedDate = x.ApprovedDate,
             }).ToList()
         };
     }
@@ -61,7 +66,7 @@ public class FinancialService : IFinancialService
         var totalExpenses = await _financialRepository.GetTotalExpensesAsync(month, year);
         var totalSalaries = await _financialRepository.GetTotalSalariesAsync(month, year);
 
-        return totalIncome - totalExpenses - totalSalaries;
+        return totalIncome - totalExpenses;
     }
 
     public async Task<IEnumerable<PartnerIncomeDto>> CalculatePartnerIncomesAsync(int month, int year)
@@ -100,15 +105,20 @@ public class FinancialService : IFinancialService
 
         foreach (var partner in partners)
         {
-            var settlementAmount = await CalculatePartnerSettlementAsync(partner.Id, month, year);
-            
+            var actualAmount = (int)await _financialRepository
+                    .GetPartnerIncomeAsync(partner.Id, month, year);
+
+            var expectedAmount = 200000;
+
+            var settlementAmount = actualAmount - expectedAmount;
+
             var settlement = new Settlement
             {
                 PartnerId = partner.Id,
                 Month = month,
                 Year = year,
-                ExpectedAmount = 200000m,
-                ActualAmount = await _financialRepository.GetPartnerIncomeAsync(partner.Id, month, year),
+                ExpectedAmount = expectedAmount,
+                ActualAmount = actualAmount,
                 SettlementAmount = settlementAmount,
                 Status = SettlementStatus.Pending,
                 CreatedAt = DateTime.UtcNow

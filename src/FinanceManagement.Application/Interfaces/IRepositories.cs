@@ -1,4 +1,5 @@
 using FinanceManagement.Domain.Entities;
+using FinanceManagement.Application.Helpers;
 
 namespace FinanceManagement.Application.Interfaces;
 
@@ -6,10 +7,11 @@ public interface IUserRepository
 {
     Task<User?> GetByIdAsync(int id);
     Task<User?> GetByEmailAsync(string email);
-    Task<IEnumerable<User>> GetAllAsync();
+    Task<PagedResult<User>> GetAllAsync(PaginationParams paginationParams);
     Task<User> CreateAsync(User user);
     Task<User> UpdateAsync(User user);
     Task DeleteAsync(int id);
+    
 }
 
 public interface IPartnerRepository
@@ -19,7 +21,9 @@ public interface IPartnerRepository
     Task<IEnumerable<Partner>> GetMainPartnersAsync();
     Task<Partner> CreateAsync(Partner partner);
     Task<Partner> UpdateAsync(Partner partner);
+    //Task<Partner> PatchAsync (UpdatedPartnerDTO partner);
     Task<IEnumerable<Project>> GetPartnerProjectsAsync(int partnerId);
+    Task<Partner?> GetByUserID(int userId);
 }
 
 public interface IProjectRepository
@@ -29,16 +33,29 @@ public interface IProjectRepository
     Task<IEnumerable<Project>> GetByPartnerAsync(int partnerId);
     Task<Project> CreateAsync(Project project);
     Task<Project> UpdateAsync(Project project);
-    Task AssignEmployeeAsync(int projectId, int employeeId, string? role = null);
+    Task<ProjectEmployee> AssignEmployeeAsync(ProjectEmployee assign);
+    Task<bool> DeleteAsync(int id);
+    //Task<IEnumerable<Project>> GetByPartnerIdAsync(int partnerId);
+    //Task<IEnumerable<Project>> GetByStatusAsync(string status);
 }
-
+public interface IProjectEmployeeRepository
+{
+    Task<ProjectEmployee> AddAsync(ProjectEmployee entity);
+    Task<bool> IsActiveAssignmentExists(int projectId, int employeeId);
+    Task<bool> UnassignAsync(int projectId, int employeeId);
+    Task<IEnumerable<ProjectEmployee>> GetByProjectIdAsync(int projectId);
+    Task<IEnumerable<ProjectEmployee>> GetByEmployeeIdAsync(int employeeId);
+    Task<ProjectEmployee?> GetAsync(int projectId, int employeeId);
+}
 public interface IEmployeeRepository
 {
     Task<Employee?> GetByIdAsync(int id);
     Task<IEnumerable<Employee>> GetAllAsync();
     Task<Employee> CreateAsync(Employee employee);
-    Task<Employee> UpdateAsync(Employee employee);
+    Task<Employee> UpdateAsync( Employee employee);
     Task<IEnumerable<Project>> GetEmployeeProjectsAsync(int employeeId);
+   // Task<Employee?> GetEmployeeByUserID(int userid);
+    Task<Employee?> GetEmployeeByUserIdAsync(int userId);
 }
 
 public interface IBankTransactionRepository
@@ -59,7 +76,51 @@ public interface IFinancialRepository
     Task<IEnumerable<MonthlyExpense>> GetMonthlyExpensesAsync(int month, int year);
     Task<decimal> GetPartnerIncomeAsync(int partnerId, int month, int year);
 }
+public interface IAssetRepository
+{
+    Task<IEnumerable<Asset>> GetAllAsync();
+    Task<Asset?> GetByIdAsync(int id);
+    Task<Asset> AddAsync(Asset asset);
+    Task<Asset> Update(Asset asset);
+    void Delete(Asset asset);
+}
+public interface IDocTypeRepository
+{
+    Task<IEnumerable<DocType>> GetAllAsync();
+    Task<DocType?> GetByIdAsync(int id);
+    Task<DocType> AddAsync(DocType docType);
+    Task<DocType?> UpdateAsync(DocType docType);
+    Task<bool> DeleteAsync(int id);
+    Task<DocType?> PatchAsync(int id, string? typeName);
+}
+public interface IMonthlyExpenseRepository
+{
+    Task<IEnumerable<MonthlyExpense>> GetAllAsync();
+    Task<MonthlyExpense?> GetByIdAsync(int id);
+    Task<MonthlyExpense> AddAsync(MonthlyExpense entity);
+    Task<MonthlyExpense?> UpdateAsync(MonthlyExpense entity);
+    Task<bool> DeleteAsync(int id);
 
-// BUG: Missing proper async patterns in some methods
-// BUG: No cancellation token support
-// PERFORMANCE ISSUE: No pagination support for large datasets
+    Task<IEnumerable<MonthlyExpense>> GetByMonthYearAsync(int month, int year);
+}
+public interface IRevenueRepository
+{
+    Task<Revenue> CreateAsync(Revenue revenue);
+    Task<Revenue?> UpdateAsync(Revenue revenue);
+    Task<IEnumerable<Revenue>> GetAllAsync();
+    Task<Revenue?> GetByIdAsync(int id);
+    Task<bool> DeleteAsync();
+}
+public interface IEmployeeDocumentRepository
+{
+    Task <Documents>AddDocumentAsync(Documents document);
+    Task <EmployeeDocument>AddEmployeeDocumentAsync(EmployeeDocument employeeDocument);
+}
+public interface IProfileRepository
+{
+    Task<IEnumerable<Profile>> GetAllAsync();
+    Task<Profile?> GetByIdAsync(int id);
+    Task<Profile> CreateAsync(Profile profile);
+    Task<Profile> UpdateAsync(Profile profile);
+    Task<bool> DeleteAsync(int id);
+}

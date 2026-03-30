@@ -13,6 +13,8 @@ namespace FinanceManagement.Domain.Entities
         public string? Description { get; set; }
         public decimal Amount { get; set; }
         public DateTime Purchase_Date { get; set; }
-        public ICollection<MonthlyExpense>? MonthlyExpenses { get; set; } = new List<MonthlyExpense>();
+        public ICollection<MonthlyExpense> MonthlyExpenses { get; set; } = new List<MonthlyExpense>();
+
     }
+
 }

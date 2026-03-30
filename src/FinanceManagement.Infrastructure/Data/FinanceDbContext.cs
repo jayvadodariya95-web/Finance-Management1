@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using FinanceManagement.Domain.Entities;
+using System.Text;
+using FinanceManagement.Application.DTOs;
 
 namespace FinanceManagement.Infrastructure.Data;
 
@@ -9,6 +11,7 @@ public class FinanceDbContext : DbContext
     {
     }
 
+    public DbSet<Asset> Asset { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<Partner> Partners { get; set; }
     public DbSet<Branch> Branches { get; set; }
@@ -19,8 +22,17 @@ public class FinanceDbContext : DbContext
     public DbSet<BankTransaction> BankTransactions { get; set; }
     public DbSet<MonthlyExpense> MonthlyExpenses { get; set; }
     public DbSet<Settlement> Settlements { get; set; }
+    public DbSet<Profile> Profiles { get; set; }
+    public DbSet<DocType> DocTypes { get; set; }
+    public DbSet<Documents> Documents { get; set; }
+    public DbSet<EmployeeDocument> EmployeeDocuments { get; set; }
     public DbSet<Revenue> Revenues { get; set; }
     public DbSet<Asset> Assets { get; set; }
+
+    public DbSet<Revenue> Revenue { get; set; }
+    // Store Procedure 
+
+    public DbSet<TotalExpenseDTO> TotalExpenseDTO { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -61,6 +73,8 @@ public class FinanceDbContext : DbContext
             entity.HasOne(e => e.User)
                   .WithOne(u => u.Employee)
                   .HasForeignKey<Employee>(e => e.UserId);
+            entity.HasIndex(e => e.EmployeeCode).IsUnique();
+            entity.HasIndex(e => e.UserId);
             entity.HasOne(e => e.Branch)
                   .WithMany(b => b.Employees)
                   .HasForeignKey(e => e.BranchId);
@@ -72,16 +86,48 @@ public class FinanceDbContext : DbContext
         // Project configuration
         modelBuilder.Entity<Project>(entity =>
         {
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
-            entity.Property(e => e.ClientName).IsRequired().HasMaxLength(200);
-            entity.HasOne(e => e.ManagedByPartner)
-                  .WithMany(p => p.ManagedProjects)
-                  .HasForeignKey(e => e.ManagedByPartnerId);
-
-            // PERFORMANCE ISSUE: Missing index on ManagedByPartnerId
-            // BUG: No check constraint for ProjectValue > 0
+            entity.ToTable("Projects");
+            entity.HasKey(p => p.Id);
+            entity.Property(p => p.Name)
+                  .IsRequired()
+                  .HasMaxLength(150);
+            entity.Property(p => p.StartDate)
+                  .IsRequired();
+            entity.Property(p => p.TechnologyStack)
+                  .HasMaxLength(150);
+            entity.Property(p => p.ManagerName)
+                  .HasMaxLength(50);
+            entity.Property(p => p.ManagerEmail)
+                  .HasMaxLength(50);
+            entity.Property(p => p.ManagerContact)
+                  .HasMaxLength(20);
+            entity.Property(p => p.LeaveApplyWay)
+                  .HasMaxLength(255);
+            entity.Property(p => p.IsSmooth)
+                  .HasDefaultValue(false);
+            entity.Property(p => p.ProjectValue)
+                  .HasColumnType("int");
+            entity.Property(p => p.ClientManagerName)
+                  .HasMaxLength(50);
+            entity.Property(p => p.ClientManagerEmail)
+                  .HasMaxLength(50);
+            entity.Property(p => p.ClientManagerContact)
+                  .HasMaxLength(20);
+            entity.Property(p => p.MobileNumberUsed)
+                  .HasMaxLength(25);
+            entity.HasOne(p => p.Profile)
+                  .WithMany()
+                  .HasForeignKey(p => p.ProfileId)
+                  .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(p => p.InterviewingUser)
+                  .WithMany()
+                  .HasForeignKey(p => p.InterviewingUserId)
+                  .OnDelete(DeleteBehavior.Restrict);
+            entity.HasIndex(p => p.Name);
+            entity.HasIndex(p => p.ProfileId);
+            entity.HasIndex(p => p.InterviewingUserId);
         });
+
 
         // ProjectEmployee many-to-many configuration
         modelBuilder.Entity<ProjectEmployee>(entity =>
@@ -92,7 +138,7 @@ public class FinanceDbContext : DbContext
                   .HasForeignKey(e => e.ProjectId)
                   .OnDelete(DeleteBehavior.Restrict);
             entity.HasOne(e => e.Employee)
-                  .WithMany(emp => emp.ProjectAssignments)
+                  .WithMany(emp => emp.ProjectEmployee)
                   .HasForeignKey(e => e.EmployeeId)
                   .OnDelete(DeleteBehavior.Restrict);
 
@@ -120,24 +166,76 @@ public class FinanceDbContext : DbContext
         modelBuilder.Entity<Settlement>(entity =>
         {
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.ExpectedAmount).HasPrecision(18, 2);
-            entity.Property(e => e.ActualAmount).HasPrecision(18, 2);
-            entity.Property(e => e.SettlementAmount).HasPrecision(18, 2);
+            entity.Property(e => e.Month)
+                  .IsRequired();
+            entity.Property(e => e.Year)
+                  .IsRequired();
+            entity.Property(e => e.ExpectedAmount)
+                  .HasPrecision(18, 2)
+                  .IsRequired();
+            entity.Property(e => e.ActualAmount)
+                  .HasPrecision(18, 2)
+                  .IsRequired();
+            entity.Property(e => e.SettlementAmount)
+                  .HasPrecision(18, 2)
+                  .IsRequired();
+            entity.Property(e => e.TotalExpense)
+                  .HasPrecision(18, 2);
+            entity.Property(e => e.GrossProfit)
+                  .HasPrecision(18, 2);
+            entity.Property(e => e.NetProfit)
+                  .HasPrecision(18, 2);
+            entity.Property(e => e.Status)
+                  .HasConversion<int>()  // Enum as int
+                  .IsRequired();
+            entity.Property(e => e.Notes)
+                  .HasMaxLength(1000);
+            entity.Property(e => e.IsSetteled)
+                  .HasDefaultValue(0);
+            // Relationship
             entity.HasOne(e => e.Partner)
                   .WithMany(p => p.Settlements)
-                  .HasForeignKey(e => e.PartnerId);
+                  .HasForeignKey(e => e.PartnerId)
+                  .OnDelete(DeleteBehavior.Restrict);
 
-            // BUG: Missing unique constraint on PartnerId + Month + Year
+            // Unique constraint (Partner + Month + Year)
+            entity.HasIndex(e => new { e.PartnerId, e.Month, e.Year })
+                  .IsUnique();
         });
+
 
         // MonthlyExpense configuration
         modelBuilder.Entity<MonthlyExpense>(entity =>
         {
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.Amount).HasPrecision(18, 2);
-            entity.Property(e => e.Description).IsRequired().HasMaxLength(500);
 
+            entity.HasKey(me => me.Id);
+            entity.Property(me => me.Description)
+                  .IsRequired()
+                  .HasMaxLength(500);
+            entity.Property(me => me.Amount)
+                  .HasPrecision(18, 2)
+                  .IsRequired();
+            entity.Property(me => me.Category)
+                  .IsRequired()
+                  .HasConversion<int>();
+            entity.Property(me => me.IsRecurring)
+                  .HasDefaultValue(false);
+            entity.Property(me => me.ApprovedBy)
+                  .HasMaxLength(150);
+            entity.HasOne(me => me.Partner)
+                  .WithMany(p => p.MonthlyExpenses)
+                  .HasForeignKey(me => me.PartnerId)
+                  .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(me => me.Employee)
+                  .WithMany(e => e.MonthlyExpenses)
+                  .HasForeignKey(me => me.EmployeeId)
+                  .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(me => me.Asset)
+                  .WithMany(a => a.MonthlyExpenses)
+                  .HasForeignKey(me => me.AssetId)
+                  .OnDelete(DeleteBehavior.Restrict);
             // PERFORMANCE ISSUE: Missing index on Month + Year for monthly reports
+            // MonthlyExpense configuration
         });
 
         // BankAccount configuration
@@ -167,15 +265,89 @@ public class FinanceDbContext : DbContext
         //asset
         modelBuilder.Entity<Asset>(entity =>
         {
+            entity.ToTable("Documents");
+
+            entity.HasKey(d => d.Id);
+            entity.Property(d => d.Link)
+                  .HasMaxLength(500);
+
+            entity.HasOne(d => d.DocType)
+                  .WithMany(dt => dt.Documents)
+                  .HasForeignKey(d => d.DocType_Id)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        //Renvenue to Project one-to-one configuration
+        modelBuilder.Entity<Revenue>(entity =>
+        {
+            entity.HasOne(p => p.Project)
+                .WithOne(r => r.Revenue)
+                .HasForeignKey<Revenue>(r => r.ProjectId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<Revenue>(entity =>
+        {
+            entity.HasIndex(r => r.ProjectId).IsUnique();
+        });
+
+        //Revenue to Partner one-to-many configuration
+        modelBuilder.Entity<Revenue>(entity =>
+        {
+            entity.HasOne(r => r.Partner)
+            .WithMany(p => p.Revenues)
+            .HasForeignKey(r => r.PartnerId);
+        });
+
+        //asset
+        modelBuilder.Entity<Asset>(entity =>
+        {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name)
                   .HasMaxLength(200);
             entity.Property(e => e.Amount)
                   .HasPrecision(18, 2);
-            entity.HasMany(e => e.MonthlyExpenses)
-                  .WithOne()
-                  .OnDelete(DeleteBehavior.Restrict);
         });
+        // Profile configuration
+        modelBuilder.Entity<Profile>(entity =>
+        {
+            entity.HasKey(p => p.Id);
+
+            entity.Property(p => p.IsPaid)
+                  .HasDefaultValue(false);
+
+            entity.Property(p => p.Amount)
+                  .HasPrecision(18, 2);
+
+            entity.HasOne(p => p.User)
+                  .WithOne(u => u.Profile)
+                  .HasForeignKey<Profile>(p => p.UserId);
+
+            entity.HasMany(p => p.Projects)
+                  .WithOne(pr => pr.Profile)
+                  .HasForeignKey(pr => pr.ProfileId)
+                  .OnDelete(DeleteBehavior.Restrict);
+            entity.HasIndex(p => p.UserId)
+                  .IsUnique();
+        });
+        // Employee_Document Configuration
+        modelBuilder.Entity<EmployeeDocument>(entity =>
+        {
+            entity.HasKey(e => new { e.EmployeeId, e.DocumentId });
+            entity.HasIndex(e => new { e.EmployeeId, e.DocumentId }).IsUnique();
+
+            entity.HasOne(e => e.Employee)
+            .WithMany(e => e.EmployeeDocuments)
+            .HasForeignKey(e => e.EmployeeId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Documents)
+            .WithMany(e => e.EmployeeDocuments)
+            .HasForeignKey(e => e.DocumentId)
+            .OnDelete(DeleteBehavior.Restrict);
+        });
+        // store procedure method
+        modelBuilder.Entity<TotalExpenseDTO>().HasNoKey();
     }
 }
 

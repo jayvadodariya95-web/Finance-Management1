@@ -1,22 +1,26 @@
-using Microsoft.EntityFrameworkCore;
+using FinanceManagement.Application.Helpers;
 using FinanceManagement.Application.Interfaces;
 using FinanceManagement.Domain.Entities;
 using FinanceManagement.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace FinanceManagement.Infrastructure.Repositories;
 
 public class UserRepository : IUserRepository
 {
     private readonly FinanceDbContext _context;
+    private readonly IConfiguration _configuration;
 
-    public UserRepository(FinanceDbContext context)
+    public UserRepository(FinanceDbContext context, IConfiguration configuration)
     {
         _context = context;
+        _configuration = configuration;
     }
 
     public async Task<User?> GetByIdAsync(int id)
     {
-        return await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+        return await _context.Users.FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted);
     }
 
     public async Task<User?> GetByEmailAsync(string email)
@@ -25,10 +29,19 @@ public class UserRepository : IUserRepository
         return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
     }
 
-    public async Task<IEnumerable<User>> GetAllAsync()
-    {
-        return await _context.Users.ToListAsync();
-    }
+    //public async Task<PagedResult<User>> GetUsersAsync(PaginationParams paginationParams)
+    //{
+    //    var query = _context.Users
+    //        .AsNoTracking()
+    //        .OrderBy(x => x.Id)
+    //        .AsQueryable();
+
+    //    return await PaginationHelpers.CreateAsync(
+    //        query,
+    //        paginationParams.PageNumber,
+    //        paginationParams.PageSize
+    //    );
+    //}
 
     public async Task<User> CreateAsync(User user)
     {
@@ -47,13 +60,43 @@ public class UserRepository : IUserRepository
 
     public async Task DeleteAsync(int id)
     {
-        // BUG: Hard delete instead of soft delete
+        // Soft Deleted implemented 
         var user = await _context.Users.FindAsync(id);
         if (user != null)
         {
-            _context.Users.Remove(user);
+            user.IsDeleted = true;
+            _context.Users.Update(user);
             await _context.SaveChangesAsync();
         }
+    }
+
+    // Load user with pagination
+    public async Task<PagedResult<User>> GetAllAsync(PaginationParams paginationParams)
+    {
+        // Read connection string into local variable and validate to avoid passing null.
+        var connectionString = _configuration.GetConnectionString("DefaultConnection");
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            throw new InvalidOperationException("Connection string 'DefaultConnection' is not configured.");
+        }
+
+        var users = await PaginationHelper.CreateAsync<User>(
+            "GetUsersPaged",
+            connectionString,
+            paginationParams.PageNumber,
+            paginationParams.PageSize,
+            paginationParams.SearchName,
+            reader => new User
+            {
+                Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                FirstName = reader["FirstName"].ToString(),
+                LastName = reader["LastName"].ToString(),
+                Email = reader["Email"].ToString(),
+                MobileNumber = reader["MobileNumber"].ToString(),
+                Role = (Domain.Enums.UserRole)reader.GetInt32(reader.GetOrdinal("Role"))
+            });
+
+        return users;
     }
 }
 
@@ -71,7 +114,7 @@ public class EmployeeRepository : IEmployeeRepository
         return await _context.Employees
             .Include(e => e.User)
             .Include(e => e.Branch)
-            .FirstOrDefaultAsync(e => e.Id == id);
+            .FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted);
     }
 
     public async Task<IEnumerable<Employee>> GetAllAsync()
@@ -79,13 +122,14 @@ public class EmployeeRepository : IEmployeeRepository
         return await _context.Employees
             .Include(e => e.User)
             .Include(e => e.Branch)
+            .Where(e => !e.IsDeleted)
             .ToListAsync();
     }
 
     public async Task<Employee> CreateAsync(Employee employee)
     {
         // BUG: No validation for duplicate employee codes
-        _context.Employees.Add(employee);
+        await _context.Employees.AddAsync(employee);
         await _context.SaveChangesAsync();
         return employee;
     }
@@ -118,5 +162,86 @@ public class EmployeeRepository : IEmployeeRepository
         }
 
         return projects;
+    }
+
+    public async Task<Employee?> GetEmployeeByUserIdAsync(int userId)
+    {
+        return await _context.Employees
+           .Include(e => e.User)
+           .FirstOrDefaultAsync(e => e.UserId == userId);
+    }
+}
+
+public class PartnerRepository : IPartnerRepository
+{
+    private readonly FinanceDbContext _context;
+
+    public PartnerRepository(FinanceDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<Partner?> GetByIdAsync(int id)
+    {
+        return await _context.Partners
+            .Include(p => p.User)
+            .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
+    }
+
+    public async Task<IEnumerable<Partner>> GetAllAsync()
+    {
+        return await _context.Partners
+            .Include(p => p.User)
+            .Where(e => !e.IsDeleted)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<Partner>> GetMainPartnersAsync()
+    {
+        return await _context.Partners
+            .Include(p => p.User)
+            .Where(p => (bool)p.IsMainPartner)
+            .ToListAsync();
+    }
+
+    public async Task<Partner> CreateAsync(Partner partner)
+    {
+        await _context.Partners.AddAsync(partner);
+        await _context.SaveChangesAsync();
+        return partner;
+    }
+
+    public async Task<Partner> UpdateAsync(Partner partner)
+    {
+        _context.Partners.Update(partner);
+        await _context.SaveChangesAsync();
+        return partner;
+    }
+
+    public async Task<IEnumerable<Project>> GetPartnerProjectsAsync(int partnerId)
+    {
+        var projects = await _context.Projects
+            .Where(p => p.ManagedByPartnerId == partnerId)
+            .ToListAsync();
+
+        foreach (var project in projects)
+        {
+            var projectEmployees = await _context.ProjectEmployees
+                .Where(pe => pe.ProjectId == project.Id)
+                .Include(pe => pe.Employee)
+                .ThenInclude(e => e.User)
+                .ToListAsync();
+
+            project.ProjectEmployees = projectEmployees;
+        }
+
+        return projects;
+    }
+
+    public async Task<Partner?> GetByUserID(int userId)
+    {
+        return await _context.Partners
+            .Include(p => p.User)
+            .FirstOrDefaultAsync(p => p.UserId == userId);
     }
 }
