@@ -1,4 +1,5 @@
-﻿using FinanceManagement.Application.DTOs;
+﻿using FinanceManagement.Application.Common;
+using FinanceManagement.Application.DTOs;
 using FinanceManagement.Application.Interfaces;
 using FinanceManagement.Domain.Entities;
 using Microsoft.CodeAnalysis;
@@ -22,111 +23,234 @@ namespace FinanceManagement.Infrastructure.Services
             this._revenueRepository = revenueRepository;
         }
 
-        public async Task<Revenue> CreateAsync(RevenueDTO revenue)
+        public async Task<ApiResponse<Revenue>> CreateAsync(RevenueDTO revenue)
         {
-            if (revenue == null)
+            var response = new ApiResponse<Revenue>();
+            try
             {
-                throw new ArgumentNullException(nameof(revenue));
-            }
-            if (revenue.Amount <= 0)
-            {
-                throw new ArgumentException("Amount cannot be zero");
-            }
 
-            var NewRevenue = new Revenue
-            {
-                PartnerId = revenue.PartnerId,
-                ProjectId = revenue.ProjectId,
-                Amount = revenue.Amount,
-                Date = DateTime.Now,
-                Revenue_From = revenue.Revenue_From ?? true,
-                Notes = revenue.Notes
-            };
+                if (revenue == null)
+                {
+                    response.Success = false;
+                    response.Message = "Revenue data is required.";
+                }
+                if (revenue.Amount <= 0)
+                {
+                    response.Success = false;
+                    response.Message = "Amount must be greater than zero.";
+                }
 
-            return await _revenueRepository.CreateAsync(NewRevenue);
+                if (revenue.ProjectId == 0)
+                {
+                    response.Success = false;
+                    response.Message = "ProjectId is set to null because it was provided as 0.";
+                }
+
+                var newRevenue = new Revenue
+
+                {
+                    PartnerId = revenue.PartnerId,
+                    ProjectId = revenue.ProjectId,
+                    Amount = revenue.Amount,
+                    Date = DateTime.UtcNow,
+                    Revenue_From = revenue.Revenue_From,
+                    Notes = revenue.Revenue_From ? revenue.Notes : null
+                };
+
+                var result = await _revenueRepository.CreateAsync(newRevenue);
+
+                response.Success = true;
+                response.Message = "Revenue created successfully.";
+                response.Data = result;
+            }
+            catch (Exception ex)
+            {
+                response.Success = false;
+                response.Message = "An error occurred while creating the revenue.";
+                response.Timestamp = DateTime.UtcNow;
+            }
+            return response;
         }
 
-        public async Task<bool> DeleteAsync(int id)
+        public async Task<ApiResponse<bool>> DeleteAsync(int id)
         {
-            var revenue = await _revenueRepository.GetByIdAsync(id);
-
-            if (revenue == null) return false;
-            revenue.IsDeleted = true;
-            return await _revenueRepository.DeleteAsync();
+            var response = new ApiResponse<bool>();
+            try
+            {
+                var result = await _revenueRepository.DeleteAsync(id);
+                if (result == false)
+                {
+                    response.Success = false;
+                    response.Message = "Revenue not found";
+                }
+                else
+                {
+                    response.Success = true;
+                    response.Message = "Revenue deleted successfully.";
+                    response.Timestamp = DateTime.UtcNow;
+                }
+            }
+            catch (Exception ex)
+            {
+                response.Success = false;
+                response.Message = "An error occurred while deleting the revenue.";
+                response.Timestamp = DateTime.UtcNow;
+            }
+            return response;
         }
 
-        public async Task<IEnumerable<Revenue>> GetAllAsync()
+        public async Task<ApiResponse<IEnumerable<Revenue>>> GetAllAsync()
         {
-            return await _revenueRepository.GetAllAsync();
+            var response = new ApiResponse<IEnumerable<Revenue>>();
+            try
+            {
+                var result = await _revenueRepository.GetAllAsync();
+                response.Success = true;
+                response.Message = "Revenues retrieved successfully.";
+                response.Data = result;
+            }
+            catch (Exception ex)
+            {
+                response.Success = false;
+                response.Message = "An error occurred while retrieving revenues.";
+                response.Timestamp = DateTime.UtcNow;
+                return response;
+            }
+            return response;
         }
 
-        public async  Task<Revenue?> GetByIdAsync(int id)
+        public async Task<ApiResponse<Revenue?>> GetByIdAsync(int id)
         {
-            return await _revenueRepository.GetByIdAsync(id);
+            var response = new ApiResponse<Revenue?>();
+            try
+            {
+
+                var result = await _revenueRepository.GetByIdAsync(id);
+                response.Success = true;
+                response.Message = "Revenue retrieved successfully.";
+                response.Timestamp = DateTime.UtcNow;
+                response.Data = result;
+            }
+            catch (Exception ex)
+            {
+                response.Success = false;
+                response.Message = "An error occurred while retrieving the revenue.";
+                response.Timestamp = DateTime.UtcNow;
+            }
+            return response;
         }
 
-        public async Task<Revenue?> UpdateAsync(int id, RevenueDTO revenue)
+        public async Task<ApiResponse<Revenue?>> UpdateAsync(int id, RevenueDTO revenue)
         {
-            
-            if (revenue == null)
+            var response = new ApiResponse<Revenue?>();
+            try
             {
-                throw new ArgumentNullException(nameof(revenue));
+                if (revenue == null)
+                {
+                    response.Success = false;
+                    response.Message = "Revenue data is required.";
+                }
+                var ExisitngRevenue = await _revenueRepository.GetByIdAsync(id);
+                if (ExisitngRevenue == null)
+                {
+                    response.Success = false;
+                    response.Message = "Revenue not found.";
+                    response.Timestamp = DateTime.UtcNow;
+
+                }
+
+                ExisitngRevenue.PartnerId = revenue.PartnerId;
+                ExisitngRevenue.ProjectId = revenue.ProjectId;
+                ExisitngRevenue.Amount = revenue.Amount;
+                ExisitngRevenue.Date = DateTime.Now;
+                ExisitngRevenue.Revenue_From = revenue.Revenue_From;
+                ExisitngRevenue.Notes = revenue.Notes;
+
+                var result = await _revenueRepository.UpdateAsync(ExisitngRevenue);
+
+                response.Success = true;
+                response.Message = "Revenue updated successfully.";
+                response.Timestamp = DateTime.UtcNow;
+                response.Data = result;
             }
-            var ExisitngRevenue = await _revenueRepository.GetByIdAsync(id);
-            if (ExisitngRevenue == null)
+            catch (Exception ex)
             {
-                return null;
+                response.Success = false;
+                response.Message = "An error occurred while updating the revenue.";
+                response.Timestamp = DateTime.UtcNow;
             }
-
-            ExisitngRevenue.PartnerId = revenue.PartnerId;
-            ExisitngRevenue.ProjectId = revenue.ProjectId;
-            ExisitngRevenue.Amount = revenue.Amount;
-            ExisitngRevenue.Date = DateTime.Now;
-            ExisitngRevenue.Revenue_From = revenue.Revenue_From ?? true;
-            ExisitngRevenue.Notes = revenue.Notes;
-
-            return await _revenueRepository.UpdateAsync(ExisitngRevenue);
+            return response;
         }
 
-        public async Task<Revenue?> PatchAsync(int id, PatchRevenueDTO dto)
+        public async Task<ApiResponse<Revenue?>> PatchAsync(int id, PatchRevenueDTO dto)
         {
-            if (dto == null)
-                throw new ArgumentNullException(nameof(dto));
-
-            var existing = await _revenueRepository.GetByIdAsync(id);
-            if (existing == null)
-                return null;
-
-            if (dto.PartnerId.HasValue)
-                existing.PartnerId = dto.PartnerId.Value;
-
-            if (dto.ProjectId == null)
+            var response = new ApiResponse<Revenue?>();
+            try
             {
-                existing.ProjectId = null;
+                if (dto == null)
+                {
+                    response.Success = false;
+                    response.Message = "Revenue data is required.";
+                }
+
+                var existing = await _revenueRepository.GetByIdAsync(id);
+
+
+                if (existing == null)
+                {
+                    response.Success = false;
+                    response.Message = "Revenue not found.";
+                    response.Timestamp = DateTime.UtcNow;
+                    return response;
+                }
+
+                if (dto.PartnerId.HasValue)
+                    existing.PartnerId = dto.PartnerId.Value;
+
+                if (dto.ProjectId == null)
+                {
+                    response.Success = false;
+                    response.Message = "ProjectId is set to null because it was provided as null.";
+                    response.Timestamp = DateTime.UtcNow;
+                }
+                else
+                {
+                    existing.ProjectId = dto.ProjectId.Value;
+                }
+
+                if (dto.Amount.HasValue)
+                {
+                    if (dto.Amount <= 0)
+                    {
+                        response.Success = false;
+                        response.Message = "Amount must be greater than zero.";
+                    }
+
+                    existing.Amount = dto.Amount.Value;
+                }
+
+                if (dto.Date.HasValue)
+                    existing.Date = dto.Date.Value;
+
+                if (dto.Revenue_From.HasValue)
+                    existing.Revenue_From = dto.Revenue_From.Value;
+
+                if (dto.Notes != null)
+                    existing.Notes = dto.Notes;
+
+                var result = await _revenueRepository.UpdateAsync(existing);
+                response.Success = true;
+                response.Message = "Revenue patched successfully.";
+                response.Timestamp = DateTime.UtcNow;
+                response.Data = result;
             }
-            else
+            catch (Exception ex)
             {
-                existing.ProjectId = dto.ProjectId.Value;
+                response.Success = false;
+                response.Message = "An error occurred while patching the revenue.";
+                response.Timestamp = DateTime.UtcNow;
             }
-
-            if (dto.Amount.HasValue)
-            {
-                if (dto.Amount <= 0)
-                    throw new ArgumentException("Amount must be greater than zero.");
-
-                existing.Amount = dto.Amount.Value;
-            }
-
-            if (dto.Date.HasValue)
-                existing.Date = dto.Date.Value;
-
-            if (dto.Revenue_From.HasValue)
-                existing.Revenue_From = dto.Revenue_From.Value;
-
-            if (dto.Notes != null)
-                existing.Notes = dto.Notes;
-
-            return await _revenueRepository.UpdateAsync(existing);
+            return response;
         }
     }
 }
