@@ -281,8 +281,7 @@ public class RevenueDTO
     public int PartnerId { get; set; }
     public int? ProjectId { get; set; }
     public decimal Amount { get; set; }
-    public DateTime Date { get; set; }
-    public bool? Revenue_From { get; set; } = true;
+    public bool Revenue_From { get; set; }
     public string? Notes { get; set; }
 }
 public class PatchRevenueDTO

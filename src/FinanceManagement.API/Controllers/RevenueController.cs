@@ -42,8 +42,8 @@ namespace FinanceManagement.API.Controllers
 
         public async Task<IActionResult> CreateRevenue([FromBody] RevenueDTO revenue)
         {
-            var result = await _revenueService.CreateAsync(revenue);
-            return Ok(result);
+                var result = await _revenueService.CreateAsync(revenue);
+                return Ok(result);
         }
 
         [HttpPut]
@@ -53,7 +53,7 @@ namespace FinanceManagement.API.Controllers
             return Ok(updateRevenue);
         }
 
-        [HttpDelete]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteRevenue(int id)
         {
             var deleteRevenue = await _revenueService.DeleteAsync(id);
@@ -63,19 +63,12 @@ namespace FinanceManagement.API.Controllers
         [HttpPatch("{id}")]
         public async Task<IActionResult> Patch(int id, [FromBody] PatchRevenueDTO dto)
         {
-            try
-            {
                 var updated = await _revenueService.PatchAsync(id, dto);
 
                 if (updated == null)
                     return NotFound(new { message = "Revenue not found" });
 
                 return Ok(updated);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
         }
     }
 }

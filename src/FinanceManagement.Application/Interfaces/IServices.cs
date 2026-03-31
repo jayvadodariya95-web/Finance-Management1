@@ -111,12 +111,12 @@ public interface IExpenseService
 
 public interface IRevenueService
 {
-    Task<Revenue> CreateAsync(RevenueDTO revenue);
-    Task<Revenue?> UpdateAsync(int id, RevenueDTO revenue);
-    Task<IEnumerable<Revenue>> GetAllAsync();
-    Task<Revenue?> GetByIdAsync(int id);
-    Task<bool> DeleteAsync(int id);
-    Task<Revenue?> PatchAsync(int id, PatchRevenueDTO dto);
+    Task<ApiResponse<Revenue>> CreateAsync(RevenueDTO revenue);
+    Task<ApiResponse<Revenue?>> UpdateAsync(int id, RevenueDTO revenue);
+    Task<ApiResponse<IEnumerable<Revenue>>> GetAllAsync();
+    Task<ApiResponse<Revenue?>> GetByIdAsync(int id);
+    Task<ApiResponse<bool>> DeleteAsync(int id);
+    Task<ApiResponse<Revenue?>> PatchAsync(int id, PatchRevenueDTO dto);
 }
 
 public interface IEmployeeDocumentService
