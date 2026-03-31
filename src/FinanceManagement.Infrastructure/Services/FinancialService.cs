@@ -50,7 +50,7 @@ public class FinancialService : IFinancialService
                 EmployeeId = x.EmployeeId,
                 Description = x.Description,
                 Amount = x.Amount,
-                Category = x.Category.ToString(),
+                CategoryId = x.CategoryId,
                 Month = x.Month,
                 Year = x.Year,
                 IsRecurring = x.IsRecurring,

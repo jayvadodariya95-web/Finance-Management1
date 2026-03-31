@@ -154,7 +154,7 @@ public class CreateMonthlyExpenseDto
     public int? EmployeeId { get; set; }
     public string Description { get; set; } = string.Empty;
     public decimal Amount { get; set; }
-    public ExpenseCategory Category { get; set; }
+    public int CategoryId { get; set; }
     public int Month { get; set; }
     public int Year { get; set; }
     public bool IsRecurring { get; set; }
@@ -167,7 +167,7 @@ public class UpdateMonthlyExpenseDto
     public int? EmployeeId { get; set; }
     public string Description { get; set; } = string.Empty;
     public decimal Amount { get; set; }
-    public ExpenseCategory Category { get; set; }
+    public int CategoryId { get; set; }
     public int Month { get; set; }
     public int Year { get; set; }
     public bool IsRecurring { get; set; }
@@ -179,7 +179,7 @@ public class PatchMonthlyExpenseDto
     public int? EmployeeId { get; set; }
     public string? Description { get; set; } = string.Empty;
     public decimal? Amount { get; set; }
-    public ExpenseCategory? Category { get; set; }
+    public int CategoryId { get; set; }
     public int? Month { get; set; }
     public int? Year { get; set; }
     public bool? IsRecurring { get; set; }
@@ -305,7 +305,6 @@ public class UploadEmployeeDocumentDto
 
 public class ProfileDto
 {
-    public int Id { get; set; }
     public int UserId { get; set; }
     public bool IsPaid { get; set; }
     public int? Amount { get; set; }
@@ -324,4 +323,10 @@ public class UpdateProfileDto
     public int UserId { get; set; }
     public bool IsPaid { get; set; }
     public int? Amount { get; set; }
+}
+public class CategoryDto
+{
+    public string? CategoryName { get; set; }
+    public bool IsRecurring { get; set; }
+
 }

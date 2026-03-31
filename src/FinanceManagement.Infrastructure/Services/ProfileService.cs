@@ -2,72 +2,78 @@
 using FinanceManagement.Application.DTOs;
 using FinanceManagement.Application.Interfaces;
 using FinanceManagement.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace FinanceManagement.Infrastructure.Services
+namespace FinanceManagement.Infrastructure.Services;
+public class ProfileService : IProfileService
 {
-    public class ProfileService : IProfileService
+    private readonly IProfileRepository _profileRepo;
+
+    public ProfileService(IProfileRepository profileRepo)
     {
-        private readonly IProfileRepository _profileRepo;
+        _profileRepo = profileRepo;
+    }
 
-        public ProfileService(IProfileRepository profileRepo)
-        {
-            _profileRepo = profileRepo;
-        }
-
-        public async Task<ApiResponse<IEnumerable<ProfileDto>>> GetAllAsync()
+    public async Task<ApiResponse<IEnumerable<Profile>>> GetAllAsync()
+    {
+        var response = new ApiResponse<IEnumerable<Profile>>();
+        try
         {
             var profiles = await _profileRepo.GetAllAsync();
 
-            var data = profiles.Select(p => new ProfileDto
-            {
-                Id = p.Id,
-                UserId = p.UserId,
-                IsPaid = p.IsPaid,
-                Amount = p.Amount,
-                CreatedAt = p.CreatedAt
-            });
-            return ApiResponse<IEnumerable<ProfileDto>>
-                .SuccessResult(data, "Profile Fetched Successfully");
+            response.Data = profiles;
+            response.Message = "Profiles fetched successfully";
+            response.Success = true;
+        }
+        catch (Exception)
+        {
+            response.Message = "Failed to fetch profiles";
+            response.Success = false;
         }
 
-        public async Task<ApiResponse<ProfileDto?>> GetByIdAsync(int id)
-        {
-            var p = await _profileRepo.GetByIdAsync(id);
+        return response;
+    }
+    public async Task<ApiResponse<ProfileDto>> GetByIdAsync(int id)
+    {
+        var response = new ApiResponse<ProfileDto>();
 
-            if (p == null) return null;
+        try
+        {
+            var profile = await _profileRepo.GetByIdAsync(id);
+
+            if (profile == null)
             {
-                return ApiResponse<ProfileDto>.ErrorResult(
-                    "Profile not found"
-                );
+                response.Message = "Profile not found";
+                response.Success = false;
+                return response;
             }
-            var dto = new ProfileDto
-            {
-                Id = p.Id,
-                UserId = p.UserId,
-                IsPaid = p.IsPaid,
-                Amount = p.Amount,
-                CreatedAt = p.CreatedAt
-            };
-            return ApiResponse<ProfileDto>
-                .SuccessResult(dto, "Profile fetched successfully");
 
+            var result = new ProfileDto
+            {
+                UserId = profile.UserId,
+                IsPaid = profile.IsPaid,
+                Amount = profile.Amount,
+                CreatedAt = profile.CreatedAt
+            };
+
+            response.Data = result;
+            response.Message = "Profile fetched successfully";
+            response.Success = true;
+        }
+        catch (Exception)
+        {
+            response.Message = "Failed to fetch profile";
+            response.Success = false;
         }
 
-        public async Task<ApiResponse<ProfileDto>> CreateAsync(CreateProfileDto dto)
+        return response;
+    }
+
+    public async Task<ApiResponse<ProfileDto>> CreateAsync(CreateProfileDto dto)
+    {
+        var response = new ApiResponse<ProfileDto>();
+
+        try
         {
-
-            var userExists = await _profileRepo
-                .GetAllAsync()
-                .ContinueWith(t => t.Result.Any(u => u.UserId == dto.UserId));
-
-            if (userExists == null)
-                throw new Exception($"UserId {dto.UserId} not found");
-
             var entity = new Profile
             {
                 UserId = dto.UserId,
@@ -78,24 +84,39 @@ namespace FinanceManagement.Infrastructure.Services
 
             var result = await _profileRepo.CreateAsync(entity);
 
-            var responseDto =  new ProfileDto
+            var data = new ProfileDto
             {
-                Id = result.Id,
                 UserId = result.UserId,
                 IsPaid = result.IsPaid,
                 Amount = result.Amount,
                 CreatedAt = result.CreatedAt
             };
-            return ApiResponse<ProfileDto>
-                .SuccessResult(responseDto, "Profile created successfully");
-
+            response.Data = data;
+            response.Message = "Profile created successfully";
+            response.Success = true;
         }
-        public async Task<ApiResponse<ProfileDto>> UpdateAsync(int id, UpdateProfileDto dto)
+        catch (Exception)
+        {
+            response.Message = "Failed to create profile";
+            response.Success = false;
+        }
+
+        return response;
+    }
+
+    public async Task<ApiResponse<ProfileDto>> UpdateAsync(int id, UpdateProfileDto dto)
+    {
+        var response = new ApiResponse<ProfileDto>();
+
+        try
         {
             var existing = await _profileRepo.GetByIdAsync(id);
 
             if (existing == null)
-                throw new Exception("Profile not found");
+            {
+                response.Message = "Profile not found";
+                response.Success = false;
+            }
 
             existing.UserId = dto.UserId;
             existing.IsPaid = dto.IsPaid;
@@ -104,30 +125,50 @@ namespace FinanceManagement.Infrastructure.Services
 
             var updated = await _profileRepo.UpdateAsync(existing);
 
-            var responseDto = new ProfileDto
+            var result = new ProfileDto
             {
-                Id = updated.Id,
                 UserId = updated.UserId,
                 IsPaid = updated.IsPaid,
                 Amount = updated.Amount,
                 CreatedAt = updated.CreatedAt
             };
-            return ApiResponse<ProfileDto>
-                .SuccessResult(responseDto, "Profile updated successfully");
+            response.Data = result;
+            response.Message = "Profile updated successfully";
+            response.Success = true;
+        }
+        catch (Exception)
+        {
+            response.Message = "Failed to update profile";
+            response.Success = false;
         }
 
-        public async Task<ApiResponse<bool>>DeleteAsync(int id)
-        {
-            var deleted =  await _profileRepo.DeleteAsync(id);
-            if (!deleted)
-            {
-                return ApiResponse<bool>.ErrorResult(
-                    "Profile not found"
-                );
-            }
-            return ApiResponse<bool>
-                .SuccessResult(true, "Profile deleted successfully");
-        }
+        return response;
     }
 
+    public async Task<ApiResponse<bool>> DeleteAsync(int id)
+    {
+        var response = new ApiResponse<bool>();
+
+        try
+        {
+            var deleted = await _profileRepo.DeleteAsync(id);
+
+            if (!deleted)
+            {
+                response.Message = "Profile not found";
+                response.Success = false;
+            }
+
+            response.Data = true;
+            response.Message = "Profile deleted successfully";
+            response.Success = true;
+        }
+        catch (Exception)
+        {
+            response.Message = "Failed to delete profile";
+            response.Success = false;
+        }
+
+        return response;
+    }
 }

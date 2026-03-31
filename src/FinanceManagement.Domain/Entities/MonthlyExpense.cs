@@ -10,7 +10,7 @@ public class MonthlyExpense : BaseEntity
     public int? EmployeeId { get; set; }
     public string Description { get; set; } = string.Empty;
     public decimal Amount { get; set; }
-    public ExpenseCategory Category { get; set; }
+    public int CategoryId { get; set; }
     public int Month { get; set; }
     public int Year { get; set; }
     public bool IsRecurring { get; set; } = false;
@@ -19,6 +19,7 @@ public class MonthlyExpense : BaseEntity
     public Employee? Employee { get; set; }
     public Partner? Partner { get; set; }
     public Asset? Asset { get; set; }
+    public Category? Category { get; set; }
 
     // BUG: Amount can be negative
     // BUG: Month can be invalid (0, 13+)
