@@ -61,7 +61,7 @@ namespace FinanceManagement.API.Controllers
             return NoContent();
         }
         [HttpPatch("{id}/approve")]
-        public async Task<IActionResult> Approve(int id, [FromBody] string approvedBy)
+        public async Task<IActionResult> Approve(int id,int approvedBy)
         {
             var result = await _service.ApproveAsync(id, approvedBy);
 

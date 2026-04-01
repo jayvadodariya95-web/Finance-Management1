@@ -2,6 +2,7 @@
 using FinanceManagement.Application.Interfaces;
 using FinanceManagement.Domain.Entities;
 using FinanceManagement.Domain.Enums;
+using FinanceManagement.Infrastructure.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,10 +14,12 @@ namespace FinanceManagement.Infrastructure.Services
     public class ExpenseService : IExpenseService
     {
         private readonly IMonthlyExpenseRepository _repository;
+        private readonly IPartnerRepository _partner;
 
-        public ExpenseService(IMonthlyExpenseRepository repository)
+        public ExpenseService(IMonthlyExpenseRepository repository,IPartnerRepository partner)
         {
             _repository = repository;
+            this._partner = partner;
         }
 
         public async Task<IEnumerable<ExpenseDto>> GetAllAsync()
@@ -134,12 +137,23 @@ namespace FinanceManagement.Infrastructure.Services
             return updated == null ? null : MapToDto(updated);
         }
 
-        public async Task<ExpenseDto?> ApproveAsync(int id, string approvedBy)
+        public async Task<ExpenseDto?> ApproveAsync(int id, int currentUserId)
         {
             var expense = await _repository.GetByIdAsync(id);
-            if (expense == null) return null;
+            if (expense == null)
+                return null;
 
-            expense.ApprovedBy = approvedBy;
+            var partner = await _partner.GetByUserID(currentUserId);
+            if (partner == null)
+                throw new Exception("Only partners can approve.");
+
+            if (expense.ApprovedBy == currentUserId.ToString())
+                throw new Exception("You cannot approve your own expense.");
+
+            if (expense.ApprovedBy != null)
+                throw new Exception("Expense already approved.");
+
+            expense.ApprovedBy = currentUserId.ToString();
             expense.ApprovedDate = DateTime.UtcNow;
 
             await _repository.UpdateAsync(expense);
