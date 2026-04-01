@@ -106,7 +106,7 @@ public interface IExpenseService
     Task<bool> DeleteAsync(int id);
     Task<ExpenseDto?> PatchAsync(int id, PatchMonthlyExpenseDto dto);
     Task<IEnumerable<ExpenseDto>> GetByMonthYearAsync(int month, int year);
-    Task<ExpenseDto?> ApproveAsync(int id, string approvedBy);
+    Task<ExpenseDto?> ApproveAsync(int id, int approvedBy);
 }
 
 public interface IRevenueService
