@@ -278,10 +278,15 @@ public class AssignEmployeeDto
 
 public class RevenueDTO
 {
+    public int Id { get; set; }
+
     public int PartnerId { get; set; }
+    public string? PartnerName { get; set; }   
     public int? ProjectId { get; set; }
+    public string? ProjectName { get; set; }  
     public decimal Amount { get; set; }
     public DateTime Date { get; set; }
+
     public bool? Revenue_From { get; set; } = true;
     public string? Notes { get; set; }
 }

@@ -113,7 +113,7 @@ public interface IRevenueService
 {
     Task<Revenue> CreateAsync(RevenueDTO revenue);
     Task<Revenue?> UpdateAsync(int id, RevenueDTO revenue);
-    Task<IEnumerable<Revenue>> GetAllAsync();
+    Task<IEnumerable<RevenueDTO>> GetAllAsync();
     Task<Revenue?> GetByIdAsync(int id);
     Task<bool> DeleteAsync(int id);
     Task<Revenue?> PatchAsync(int id, PatchRevenueDTO dto);

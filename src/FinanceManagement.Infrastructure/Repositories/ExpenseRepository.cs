@@ -1,4 +1,5 @@
-﻿using FinanceManagement.Application.Interfaces;
+﻿using FinanceManagement.Application.DTOs;
+using FinanceManagement.Application.Interfaces;
 using FinanceManagement.Domain.Entities;
 using FinanceManagement.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -19,11 +20,43 @@ namespace FinanceManagement.Infrastructure.Repositories
             this._context = context;
         }
 
-        public async Task<IEnumerable<MonthlyExpense>> GetAllAsync()
+        public async Task<IEnumerable<ExpenseDto>> GetAllAsync()
         {
-            return await _context.MonthlyExpenses
-                .Where(x => !x.IsDeleted)
-                .ToListAsync();
+            var users = _context.Users;
+
+                return await _context.MonthlyExpenses
+                    .AsNoTracking()
+                    .Where(x => !x.IsDeleted)
+                    .Select(x => new ExpenseDto
+                    {
+                        Id = x.Id,
+                        AssetId = x.AssetId,
+                        PartnerId = x.PartnerId,
+                        EmployeeId = x.EmployeeId,
+
+                        Description = x.Description,
+                        Amount = x.Amount,
+                        CategoryId = x.CategoryId,
+
+                        Month = x.Month,
+                        Year = x.Year,
+                        IsRecurring = x.IsRecurring,
+
+                        ApprovedBy = x.ApprovedBy,
+                        ApprovedDate = x.ApprovedDate,
+
+                        EmployeeName = x.Employee != null && x.Employee.User != null
+                            ? ((x.Employee.User.FirstName ?? "") + " " + (x.Employee.User.LastName ?? "")).Trim()
+                            : null,
+
+                        PartnerName = x.Partner != null && x.Partner.User != null
+                            ? ((x.Partner.User.FirstName ?? "") + " " + (x.Partner.User.LastName ?? "")).Trim()
+                            : null,
+                        AssetName = x.Asset != null ? x.Asset.Name : null,
+                        CategoryName = x.Category != null ? x.Category.CategoryName : null
+                            
+                    })
+                    .ToListAsync();
         }
 
         public async Task<MonthlyExpense?> GetByIdAsync(int id)

@@ -55,9 +55,10 @@ namespace FinanceManagement.Infrastructure.Services
             return await _revenueRepository.DeleteAsync();
         }
 
-        public async Task<IEnumerable<Revenue>> GetAllAsync()
+        public async Task<IEnumerable<RevenueDTO>> GetAllAsync()
         {
-            return await _revenueRepository.GetAllAsync();
+            var result = await _revenueRepository.GetAllAsync();
+            return result;
         }
 
         public async  Task<Revenue?> GetByIdAsync(int id)

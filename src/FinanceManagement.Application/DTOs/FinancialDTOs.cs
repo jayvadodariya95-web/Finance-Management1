@@ -1,3 +1,5 @@
+using FinanceManagement.Domain.Entities;
+
 namespace FinanceManagement.Application.DTOs;
 
 public class MonthlyReportDto
@@ -32,7 +34,7 @@ public class ExpenseDto
     public string Description { get; set; } = string.Empty;
     public decimal Amount { get; set; }
     public int CategoryId { get; set; } 
-
+    public string? CategoryName { get; set; }
     public int Month { get; set; }
     public int Year { get; set; }
 
@@ -44,7 +46,7 @@ public class ExpenseDto
     public string? EmployeeName { get; set; }
     public string? PartnerName { get; set; }
     public string? AssetName { get; set; }
-
+    public User ApprovedByName { get; set; }
     // Optional computed field
     public bool IsApproved => ApprovedDate != null;
 
