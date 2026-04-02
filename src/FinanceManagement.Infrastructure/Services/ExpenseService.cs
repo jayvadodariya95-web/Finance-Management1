@@ -25,7 +25,7 @@ namespace FinanceManagement.Infrastructure.Services
         public async Task<IEnumerable<ExpenseDto>> GetAllAsync()
         {
             var data = await _repository.GetAllAsync();
-            return data.Select(MapToDto);
+            return data;
         }
 
         public async Task<ExpenseDto?> GetByIdAsync(int id)
@@ -176,8 +176,7 @@ namespace FinanceManagement.Infrastructure.Services
                 Year = x.Year,
                 IsRecurring = x.IsRecurring,
                 ApprovedBy = x.ApprovedBy,
-                ApprovedDate = x.ApprovedDate,
-
+                ApprovedDate = x.ApprovedDate
             };
         }
     }

@@ -48,28 +48,10 @@ namespace FinanceManagement.Infrastructure.Services
 
                 var newRevenue = new Revenue
 
-                {
-                    PartnerId = revenue.PartnerId,
-                    ProjectId = revenue.ProjectId,
-                    Amount = revenue.Amount,
-                    Date = DateTime.UtcNow,
-                    Revenue_From = revenue.Revenue_From,
-                    Notes = revenue.Revenue_From ? revenue.Notes : null
-                };
-
-                var result = await _revenueRepository.CreateAsync(newRevenue);
-
-                response.Success = true;
-                response.Message = "Revenue created successfully.";
-                response.Data = result;
-            }
-            catch (Exception ex)
-            {
-                response.Success = false;
-                response.Message = "An error occurred while creating the revenue.";
-                response.Timestamp = DateTime.UtcNow;
-            }
-            return response;
+        public async Task<IEnumerable<RevenueDTO>> GetAllAsync()
+        {
+            var result = await _revenueRepository.GetAllAsync();
+            return result;
         }
 
         public async Task<ApiResponse<bool>> DeleteAsync(int id)

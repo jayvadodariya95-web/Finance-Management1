@@ -1,5 +1,6 @@
 using FinanceManagement.Domain.Entities;
 using FinanceManagement.Application.Helpers;
+using FinanceManagement.Application.DTOs;
 
 namespace FinanceManagement.Application.Interfaces;
 
@@ -95,7 +96,7 @@ public interface IDocTypeRepository
 }
 public interface IMonthlyExpenseRepository
 {
-    Task<IEnumerable<MonthlyExpense>> GetAllAsync();
+    Task<IEnumerable<ExpenseDto>> GetAllAsync();
     Task<MonthlyExpense?> GetByIdAsync(int id);
     Task<MonthlyExpense> AddAsync(MonthlyExpense entity);
     Task<MonthlyExpense?> UpdateAsync(MonthlyExpense entity);
@@ -107,7 +108,7 @@ public interface IRevenueRepository
 {
     Task<Revenue> CreateAsync(Revenue revenue);
     Task<Revenue?> UpdateAsync(Revenue revenue);
-    Task<IEnumerable<Revenue>> GetAllAsync();
+    Task<IEnumerable<RevenueDTO>> GetAllAsync();
     Task<Revenue?> GetByIdAsync(int id);
     Task<bool> DeleteAsync(int id);
 }
