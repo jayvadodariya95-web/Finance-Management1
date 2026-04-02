@@ -22,7 +22,6 @@ namespace FinanceManagement.Infrastructure.Repositories
 
         public async Task<IEnumerable<ExpenseDto>> GetAllAsync()
         {
-            var users = _context.Users;
 
                 return await _context.MonthlyExpenses
                     .AsNoTracking()
