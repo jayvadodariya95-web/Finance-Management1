@@ -27,9 +27,15 @@ namespace FinanceManagement.Infrastructure.Repositories
             return revenue;
         }
 
-        public async Task<bool> DeleteAsync()
+        public async Task<bool> DeleteAsync(int id)
         {
-            
+            var existRevenue = await _context.Revenue.FindAsync(id);
+            if (existRevenue == null || existRevenue.IsDeleted == true)
+            {
+                return false;
+            }
+
+            existRevenue.IsDeleted = true;
             await _context.SaveChangesAsync();
             return true;
         }

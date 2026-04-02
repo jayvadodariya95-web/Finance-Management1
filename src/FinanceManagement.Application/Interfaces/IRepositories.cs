@@ -110,7 +110,7 @@ public interface IRevenueRepository
     Task<Revenue?> UpdateAsync(Revenue revenue);
     Task<IEnumerable<RevenueDTO>> GetAllAsync();
     Task<Revenue?> GetByIdAsync(int id);
-    Task<bool> DeleteAsync();
+    Task<bool> DeleteAsync(int id);
 }
 public interface IEmployeeDocumentRepository
 {
