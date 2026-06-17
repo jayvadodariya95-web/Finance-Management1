@@ -287,7 +287,7 @@ public class RevenueDTO
     public decimal Amount { get; set; }
     public DateTime Date { get; set; }
 
-    public bool? Revenue_From { get; set; } = true;
+    public bool Revenue_From { get; set; } = true;
     public string? Notes { get; set; }
 }
 public class PatchRevenueDTO
@@ -334,4 +334,16 @@ public class CategoryDto
     public string? CategoryName { get; set; }
     public bool IsRecurring { get; set; }
 
+}
+public class CreateEmployeeSalaryDto
+{
+    public int EmployeeId { get; set; }
+    public int? AssetId { get; set; }
+    public int PartnerId { get; set; }
+    public int ExpenseId { get; set; }
+    public int CategoryId { get; set; }
+    public string? Description { get; set; }
+    public decimal Amount { get; set; }
+    public bool IsRecurring { get; set; }
+    public DateTime SalaryDate { get; set; }
 }

@@ -44,6 +44,7 @@ builder.Services.AddScoped<IProjectEmployeeRepository, ProjectEmployeeRepository
 builder.Services.AddScoped<IRevenueRepository, RevenueRepository>();
 builder.Services.AddScoped<IEmployeeDocumentRepository, EmployeeDocumentRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<IEmployeeSalaryRepository, EmployeeSalaryRepository>();
 
 builder.Services.AddScoped<IEmployeeDocumentService, EmployeeDocumentService>();
 builder.Services.AddScoped<IRevenueService, RevenueService>();
@@ -59,6 +60,7 @@ builder.Services.AddScoped<IProjectService, ProjectService>();
 builder.Services.AddScoped<IProfileRepository, ProfileRepository>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
 builder.Services.AddScoped<ICategoryService, CategoryServicecs>();
+builder.Services.AddScoped<IEmployeeSalaryService, EmployeeSalaryService>();
 
 
 

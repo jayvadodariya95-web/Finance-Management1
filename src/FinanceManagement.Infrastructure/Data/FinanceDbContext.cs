@@ -28,6 +28,7 @@ public class FinanceDbContext : DbContext
     public DbSet<EmployeeDocument> EmployeeDocuments { get; set; }
     public DbSet<Category> Categories { get; set; }
     public DbSet<Revenue> Revenue { get; set; }
+    public DbSet<EmployeeSalary> EmployeeSalaries { get; set; }
     // Store Procedure 
 
     public DbSet<TotalExpenseDTO> TotalExpenseDTO { get; set; }
@@ -358,6 +359,38 @@ public class FinanceDbContext : DbContext
 
             entity.Property(e => e.IsRecurring)
                   .IsRequired();
+        });
+        modelBuilder.Entity<EmployeeSalary>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.Amount)
+                  .HasPrecision(18, 2)
+                  .IsRequired();
+
+            entity.Property(e => e.SalaryDate)
+                  .IsRequired();
+
+            // ✅ Relationships (FIXED - no duplicate FK issue)
+            entity.HasOne(e => e.Employee)
+                  .WithMany(e => e.EmployeeSalaries)
+                  .HasForeignKey(e => e.EmployeeId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Partner)
+                  .WithMany(p => p.EmployeeSalaries)
+                  .HasForeignKey(e => e.PartnerId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.MonthlyExpense)
+                  .WithMany(m => m.EmployeeSalaries)
+                  .HasForeignKey(e => e.ExpenseId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            // 🚀 Indexes (performance)
+            entity.HasIndex(e => e.EmployeeId);
+            entity.HasIndex(e => e.PartnerId);
+            entity.HasIndex(e => e.SalaryDate);
         });
         // store procedure method
         modelBuilder.Entity<TotalExpenseDTO>().HasNoKey();

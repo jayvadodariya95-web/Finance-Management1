@@ -20,6 +20,7 @@ public class MonthlyExpense : BaseEntity
     public Partner? Partner { get; set; }
     public Asset? Asset { get; set; }
     public Category? Category { get; set; }
+    public ICollection<EmployeeSalary> EmployeeSalaries { get; set; } = new List<EmployeeSalary>();
 
     // BUG: Amount can be negative
     // BUG: Month can be invalid (0, 13+)

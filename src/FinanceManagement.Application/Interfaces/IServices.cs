@@ -111,12 +111,12 @@ public interface IExpenseService
 
 public interface IRevenueService
 {
-    Task<Revenue> CreateAsync(RevenueDTO revenue);
-    Task<Revenue?> UpdateAsync(int id, RevenueDTO revenue);
+    Task<ApiResponse<Revenue>> CreateAsync(RevenueDTO revenue);
+    Task<ApiResponse<Revenue?>> UpdateAsync(int id, RevenueDTO revenue);
     Task<IEnumerable<RevenueDTO>> GetAllAsync();
-    Task<Revenue?> GetByIdAsync(int id);
-    Task<bool> DeleteAsync(int id);
-    Task<Revenue?> PatchAsync(int id, PatchRevenueDTO dto);
+    Task<ApiResponse<Revenue?>> GetByIdAsync(int id);
+    Task<ApiResponse<bool>> DeleteAsync(int id);
+    Task<ApiResponse<Revenue?>> PatchAsync(int id, PatchRevenueDTO dto);
 }
 
 public interface IEmployeeDocumentService
@@ -139,4 +139,10 @@ public interface ICategoryService
     public Task<ApiResponse<CategoryDto>> UpdateAsync(int id, CategoryDto category);
     public Task<bool> DeleteAsync(int id);
 
+}
+public interface IEmployeeSalaryService
+{
+    Task<ApiResponse<EmployeeSalary>> AddAsync(CreateEmployeeSalaryDto dto);
+    Task<ApiResponse<List<EmployeeSalary>>> AddBulkAsync(List<CreateEmployeeSalaryDto> dtos);
+    Task<ApiResponse<List<Employee>>> GetAvailableEmployeesAsync();
 }

@@ -47,6 +47,29 @@ namespace FinanceManagement.Infrastructure.Services
                 }
 
                 var newRevenue = new Revenue
+                {
+                    PartnerId = revenue.PartnerId,
+                    ProjectId = revenue.ProjectId,
+                    Amount = revenue.Amount,
+                    Date = DateTime.UtcNow,
+                    Revenue_From = revenue.Revenue_From,
+                    Notes = revenue.Revenue_From ? revenue.Notes : null
+                };
+
+                var result = await _revenueRepository.CreateAsync(newRevenue);
+
+                response.Success = true;
+                response.Message = "Revenue created successfully.";
+                response.Data = result;
+            }
+            catch (Exception ex)
+            {
+                response.Success = false;
+                response.Message = "An error occurred while creating the revenue.";
+                response.Timestamp = DateTime.UtcNow;
+            }
+            return response;
+        }
 
         public async Task<IEnumerable<RevenueDTO>> GetAllAsync()
         {
@@ -77,26 +100,6 @@ namespace FinanceManagement.Infrastructure.Services
                 response.Success = false;
                 response.Message = "An error occurred while deleting the revenue.";
                 response.Timestamp = DateTime.UtcNow;
-            }
-            return response;
-        }
-
-        public async Task<ApiResponse<IEnumerable<Revenue>>> GetAllAsync()
-        {
-            var response = new ApiResponse<IEnumerable<Revenue>>();
-            try
-            {
-                var result = await _revenueRepository.GetAllAsync();
-                response.Success = true;
-                response.Message = "Revenues retrieved successfully.";
-                response.Data = result;
-            }
-            catch (Exception ex)
-            {
-                response.Success = false;
-                response.Message = "An error occurred while retrieving revenues.";
-                response.Timestamp = DateTime.UtcNow;
-                return response;
             }
             return response;
         }

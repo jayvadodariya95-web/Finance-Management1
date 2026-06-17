@@ -2,6 +2,7 @@
 using FinanceManagement.Application.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace FinanceManagement.API.Controllers
 {
@@ -31,7 +32,7 @@ namespace FinanceManagement.API.Controllers
             return Ok(data);
         }
 
-       
+
         [HttpPost]
         public async Task<IActionResult> Create(CreateMonthlyExpenseDto dto)
         {
@@ -61,7 +62,7 @@ namespace FinanceManagement.API.Controllers
             return NoContent();
         }
         [HttpPatch("{id}/approve")]
-        public async Task<IActionResult> Approve(int id,int approvedBy)
+        public async Task<IActionResult> Approve(int id, int approvedBy)
         {
             var result = await _service.ApproveAsync(id, approvedBy);
 
@@ -81,5 +82,7 @@ namespace FinanceManagement.API.Controllers
 
             return Ok(result);
         }
+
+
     }
 }

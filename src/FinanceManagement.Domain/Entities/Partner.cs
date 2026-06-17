@@ -18,6 +18,7 @@ public class Partner : BaseEntity
     public ICollection<Settlement> Settlements { get; set; } = new List<Settlement>();
     public ICollection<Revenue> Revenues { get; set; } = new List<Revenue>();
     public ICollection<MonthlyExpense> MonthlyExpenses { get; set; } = new List<MonthlyExpense>();
+    public ICollection<EmployeeSalary> EmployeeSalaries { get; set; } = new List<EmployeeSalary>();
 }
 public class UpdatedPartnerDTO
 {

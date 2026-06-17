@@ -12,7 +12,7 @@ public interface IUserRepository
     Task<User> CreateAsync(User user);
     Task<User> UpdateAsync(User user);
     Task DeleteAsync(int id);
-    
+
 }
 
 public interface IPartnerRepository
@@ -53,9 +53,9 @@ public interface IEmployeeRepository
     Task<Employee?> GetByIdAsync(int id);
     Task<IEnumerable<Employee>> GetAllAsync();
     Task<Employee> CreateAsync(Employee employee);
-    Task<Employee> UpdateAsync( Employee employee);
+    Task<Employee> UpdateAsync(Employee employee);
     Task<IEnumerable<Project>> GetEmployeeProjectsAsync(int employeeId);
-   // Task<Employee?> GetEmployeeByUserID(int userid);
+    // Task<Employee?> GetEmployeeByUserID(int userid);
     Task<Employee?> GetEmployeeByUserIdAsync(int userId);
 }
 
@@ -114,8 +114,8 @@ public interface IRevenueRepository
 }
 public interface IEmployeeDocumentRepository
 {
-    Task <Documents>AddDocumentAsync(Documents document);
-    Task <EmployeeDocument>AddEmployeeDocumentAsync(EmployeeDocument employeeDocument);
+    Task<Documents> AddDocumentAsync(Documents document);
+    Task<EmployeeDocument> AddEmployeeDocumentAsync(EmployeeDocument employeeDocument);
 }
 public interface IProfileRepository
 {
@@ -127,10 +127,16 @@ public interface IProfileRepository
 }
 public interface ICategoryRepository
 {
-    public Task<IEnumerable<Category>> GetAllAsync();
-    public Task<Category?> GetByIdAsync(int id);
-    public Task<Category> CreateAsync(Category category);
-    public Task<Category> UpdateAsync(int id, Category category);
-    public Task<bool> DeleteAsync(int id);
+    Task<IEnumerable<Category>> GetAllAsync();
+    Task<Category?> GetByIdAsync(int id);
+    Task<Category> CreateAsync(Category category);
+    Task<Category> UpdateAsync(int id, Category category);
+    Task<bool> DeleteAsync(int id);
 
+}
+public interface IEmployeeSalaryRepository
+{
+    Task<EmployeeSalary> AddAsyncs(EmployeeSalary emp, MonthlyExpense MonthlyExpense);
+    Task<List<EmployeeSalary>> AddBulkAsync(MonthlyExpense monthlyExpense,List<EmployeeSalary> salaries);
+    public Task<List<Employee>> GetAvailableEmployeesAsync();
 }
